@@ -124,7 +124,6 @@
         .ok{color:#4ade80;}
         .erro{color:#fca5a5;}
 
-        /* Lista de usuários */
         .users-list{margin-top:8px;max-height:360px;overflow:auto;padding-right:4px;}
         .users-header, .user-row{
             display:grid;
@@ -195,7 +194,6 @@
 
 <main>
     <div class="grid">
-        <!-- CADASTRO / EDIÇÃO DE USUÁRIO -->
         <section class="card">
             <div class="card-header">
                 <span class="tag">Novo acesso / Edição</span>
@@ -234,7 +232,6 @@
             </form>
         </section>
 
-        <!-- LISTA DE USUÁRIOS -->
         <section class="card">
             <div class="card-header">
                 <span class="tag">Usuários cadastrados</span>
@@ -250,7 +247,7 @@
 </main>
 
 <script type="module">
-    // Proteção: só master ou admin
+    // Só master e admin
     const userData = localStorage.getItem("usuarioLogado");
     if(!userData){
         alert("Faça login primeiro.");
