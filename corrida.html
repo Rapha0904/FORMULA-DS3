@@ -20,6 +20,7 @@
             background:radial-gradient(circle at top,#1f2937,#020617);
             color:var(--text);
         }
+        /* HEADER */
         header{
             padding:12px 16px;
             display:flex;
@@ -56,6 +57,8 @@
         }
         nav a:hover{background:rgba(37,99,235,0.2);}
         .user-info{font-size:11px;color:var(--muted);}
+
+        /* MAIN */
         main{
             max-width:1100px;margin:18px auto 26px;padding:0 12px;
         }
@@ -81,7 +84,8 @@
         }
         .tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
         h2{font-size:18px;}
-        /* BOTÕES E STATUS */
+
+        /* CONTROLES */
         .controls{
             display:flex;align-items:center;justify-content:space-between;
             flex-wrap:wrap;gap:10px;margin-bottom:10px;
@@ -116,7 +120,7 @@
             position:relative;
             width:100%;
             max-width:450px;
-            height:min(72vh,520px); /* grande mas sem precisar rolar na maioria das telas */
+            height:min(72vh,520px);
             border-radius:18px;
             padding:10px 10px 14px;
             background:conic-gradient(from 180deg,#020617,#020617 40%,#030712 70%,#020617);
@@ -156,8 +160,6 @@
             0%{background-position-y:0;}
             100%{background-position-y:20px;}
         }
-
-        /* Linha de chegada horizontal em cima */
         .finish-bar{
             position:absolute;
             top:12px;
@@ -231,7 +233,7 @@
         .obstacle-2{top:270px;}
         .obstacle-3{top:360px;}
 
-        /* DASHBOARD LADO DIREITO */
+        /* PAINEL LADO DIREITO */
         .mini-grid{
             display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
             gap:10px;margin-top:6px;margin-bottom:12px;
@@ -262,7 +264,7 @@
         .badge-2{background:rgba(59,130,246,0.15);color:#bfdbfe;}
         .badge-3{background:rgba(34,197,94,0.15);color:#bbf7d0;}
 
-        /* OVERLAY DE CONTAGEM 3,2,1, GO */
+        /* OVERLAY 3,2,1, GO */
         #countdownOverlay{
             position:fixed;
             inset:0;
@@ -312,6 +314,7 @@
 
 <main>
     <div class="grid">
+        <!-- LADO ESQUERDO: PISTA -->
         <section class="card">
             <div class="card-header">
                 <div>
@@ -376,6 +379,7 @@
             </div>
         </section>
 
+        <!-- LADO DIREITO: PAINEL -->
         <aside class="card">
             <div class="card-header">
                 <div>
@@ -487,6 +491,7 @@
     const countdownOverlay = document.getElementById("countdownOverlay");
     const countdownText    = document.getElementById("countdownText");
 
+    // Config dos carros
     const cars = [
         { id:"car1", laneId:"lane1", nome:"Carro 1 • Silver Arrow", progresso:0 },
         { id:"car2", laneId:"lane2", nome:"Carro 2 • Orange Blaze", progresso:0 },
@@ -561,7 +566,7 @@
     function iniciarMovimentoCarros(){
         intervalo = setInterval(() => {
             cars.forEach(c => {
-                const incremento = Math.random()*4 + 1;
+                const incremento = Math.random()*4 + 1; // 1 a 5
                 c.progresso += incremento;
                 if(c.progresso > maxProgresso){
                     c.progresso = maxProgresso;
@@ -624,7 +629,7 @@
         }
     }
 
-    // Estatísticas
+    // Estatísticas de corridas
     onValue(statsRef,(snapshot)=>{
         if(snapshot.exists()){
             const s = snapshot.val();
