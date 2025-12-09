@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Recepção - Cadastro & Aposta</title>
+    <title>Recepção - Cadastro & Palpite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root{
@@ -20,10 +20,12 @@
             color:var(--text);
         }
         header{
-            padding:12px 22px;
+            padding:12px 16px;
             display:flex;
             align-items:center;
             justify-content:space-between;
+            flex-wrap:wrap;
+            gap:8px;
             border-bottom:1px solid rgba(148,163,184,0.35);
             background:rgba(2,6,23,0.95);
             backdrop-filter:blur(10px);
@@ -34,19 +36,17 @@
             gap:10px;
         }
         .logo-circle{
-            width:52px;height:52px;border-radius:50%;
+            width:48px;height:48px;border-radius:50%;
             background:#020617;border:2px solid var(--accent);
             display:flex;align-items:center;justify-content:center;
             overflow:hidden;box-shadow:0 0 10px rgba(239,68,68,0.5);
         }
-        .logo-circle img{width:65px;}
+        .logo-circle img{width:60px;}
         .logo-text{display:flex;flex-direction:column;gap:2px;}
-        .logo-text strong{font-size:16px;}
+        .logo-text strong{font-size:15px;}
         .logo-text span{font-size:11px;color:var(--muted);text-transform:uppercase;}
         nav{
-            display:flex;
-            align-items:center;
-            gap:8px;
+            display:flex;align-items:center;gap:8px;flex-wrap:wrap;
         }
         nav a{
             font-size:12px;color:#93c5fd;text-decoration:none;
@@ -56,19 +56,19 @@
         nav a:hover{background:rgba(37,99,235,0.2);}
         .user-info{font-size:11px;color:var(--muted);}
         main{
-            max-width:900px;margin:20px auto;padding:0 18px 30px;
+            max-width:900px;margin:18px auto 26px;padding:0 12px;
         }
         .card{
             background:radial-gradient(circle at top,#020617,#020617 40%,#030712);
-            border-radius:22px;
-            padding:20px 20px 22px;
+            border-radius:20px;
+            padding:18px 16px 22px;
             border:1px solid rgba(148,163,184,0.45);
-            box-shadow:0 22px 40px rgba(0,0,0,0.75);
+            box-shadow:0 20px 40px rgba(0,0,0,0.75);
         }
         .card-header{margin-bottom:10px;}
         .tag{
-            font-size:11px;color:var(--muted);text-transform:uppercase;
-            letter-spacing:1px;
+            font-size:11px;color:var(--muted);
+            text-transform:uppercase;letter-spacing:1px;
         }
         h2{font-size:19px;}
         .description{
@@ -80,18 +80,18 @@
             gap:14px;
             margin-top:14px;
         }
-        @media(max-width:700px){.form-grid{grid-template-columns:1fr;}}
-        .form-group{display:flex;flex-direction:column;gap:5px;font-size:13px;}
-        label{
-            color:var(--muted);
-            font-weight:500;
+        @media(max-width:700px){
+            .form-grid{grid-template-columns:1fr;}
         }
+        .form-group{display:flex;flex-direction:column;gap:5px;font-size:13px;}
+        label{color:var(--muted);font-weight:500;}
         input, select{
             padding:9px 11px;border-radius:12px;
             border:1px solid rgba(148,163,184,0.7);
             background:rgba(15,23,42,0.9);
             color:var(--text);font-size:13px;
             transition:border .15s, box-shadow .15s, background .15s;
+            width:100%;
         }
         input::placeholder{color:#6b7280;}
         input:focus, select:focus{
@@ -139,14 +139,14 @@
         </div>
         <div class="logo-text">
             <strong>Fórmula DS3</strong>
-            <span>Recepção • Cadastro & Aposta</span>
+            <span>Recepção • Cadastro & palpite</span>
         </div>
     </div>
     <nav>
         <span class="user-info" id="infoUser"></span>
         <a href="admin.html">Admin</a>
         <a href="corrida.html">Corrida</a>
-        <a href="login.html" onclick="localStorage.removeItem('usuarioLogado')">Sair</a>
+        <a href="index.html" onclick="localStorage.removeItem('usuarioLogado')">Sair</a>
     </nav>
 </header>
 
@@ -154,9 +154,9 @@
     <section class="card">
         <div class="card-header">
             <span class="tag">Entrada de participantes</span>
-            <h2>Cadastro + escolha do carrinho</h2>
+            <h2>Cadastro + escolha de palpite</h2>
             <p class="description">
-                A recepção registra quem está entrando no evento e já define em qual carrinho a pessoa está apostando.
+                A recepção registra quem está entrando no evento e já define em qual carrinho a pessoa está dando o palpite.
             </p>
         </div>
 
@@ -179,12 +179,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="carro">Carrinho escolhido (aposta)</label>
+                    <label for="carro">Carrinho escolhido (palpite)</label>
                     <select id="carro" required>
                         <option value="">Selecione...</option>
-                        <option value="carro1">Carro 1 • Red Flash</option>
-                        <option value="carro2">Carro 2 • Blue Storm</option>
-                        <option value="carro3">Carro 3 • Green Volt</option>
+                        <option value="carro1">Carro 1 • Silver Arrow</option>
+                        <option value="carro2">Carro 2 • Orange Blaze</option>
+                        <option value="carro3">Carro 3 • Red Scuderia</option>
                     </select>
                 </div>
             </div>
@@ -197,21 +197,23 @@
 </main>
 
 <script type="module">
-    // Proteção de acesso: só recepcao ou master
+    // Permite: recepcao, admin, master
     const userData = localStorage.getItem("usuarioLogado");
     if(!userData){
         alert("Faça login primeiro.");
-        window.location.href = "login.html";
+        window.location.href = "index.html";
     }else{
         const u = JSON.parse(userData);
-        if(u.role !== "recepcao" && u.role !== "master"){
+        if(u.role !== "recepcao" && u.role !== "admin" && u.role !== "master"){
             alert("Você não tem acesso à página de recepção.");
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         }else{
+            const info =
+                u.role === "master" ? "(MASTER)" :
+                u.role === "admin"  ? "(ADMIN)"  :
+                                      "(RECEPÇÃO)";
             document.getElementById("infoUser").textContent =
-                u.role === "master"
-                    ? `Logado como: ${u.email} (MASTER)`
-                    : `Logado como: ${u.email} (Recepção)`;
+                `Logado como: ${u.email} ${info}`;
         }
     }
 
@@ -261,7 +263,7 @@
 
         try{
             await push(apostasRef, novaAposta);
-            msgCadastro.textContent = "Entrada registrada e aposta salva!";
+            msgCadastro.textContent = "Entrada registrada e palpite salvo!";
             msgCadastro.className = "ok";
             formCadastro.reset();
         }catch(err){
