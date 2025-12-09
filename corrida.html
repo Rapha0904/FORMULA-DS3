@@ -21,10 +21,12 @@
             color:var(--text);
         }
         header{
-            padding:12px 22px;
+            padding:12px 16px;
             display:flex;
             align-items:center;
             justify-content:space-between;
+            flex-wrap:wrap;
+            gap:8px;
             border-bottom:1px solid rgba(148,163,184,0.35);
             background:rgba(2,6,23,0.95);
             backdrop-filter:blur(10px);
@@ -35,17 +37,17 @@
             gap:10px;
         }
         .logo-circle{
-            width:52px;height:52px;border-radius:50%;
+            width:48px;height:48px;border-radius:50%;
             background:#020617;border:2px solid var(--accent1);
             display:flex;align-items:center;justify-content:center;
             overflow:hidden;box-shadow:0 0 10px rgba(239,68,68,0.5);
         }
-        .logo-circle img{width:65px;}
+        .logo-circle img{width:60px;}
         .logo-text{display:flex;flex-direction:column;gap:2px;}
-        .logo-text strong{font-size:16px;}
+        .logo-text strong{font-size:15px;}
         .logo-text span{font-size:11px;color:var(--muted);text-transform:uppercase;}
         nav{
-            display:flex;align-items:center;gap:8px;
+            display:flex;align-items:center;gap:8px;flex-wrap:wrap;
         }
         nav a{
             font-size:12px;color:#93c5fd;text-decoration:none;
@@ -55,24 +57,27 @@
         nav a:hover{background:rgba(37,99,235,0.2);}
         .user-info{font-size:11px;color:var(--muted);}
         main{
-            max-width:1100px;margin:20px auto;padding:0 18px 30px;
+            max-width:1100px;margin:18px auto 26px;padding:0 12px;
         }
         .grid{
             display:grid;
             grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);
-            gap:18px;
+            gap:16px;
         }
-        @media(max-width:900px){.grid{grid-template-columns:1fr;}}
+        @media(max-width:900px){
+            .grid{grid-template-columns:1fr;}
+        }
         .card{
             background:radial-gradient(circle at top,#020617,#020617 40%,#030712);
-            border-radius:22px;
-            padding:18px;
+            border-radius:20px;
+            padding:16px;
             border:1px solid rgba(148,163,184,0.45);
-            box-shadow:0 22px 40px rgba(0,0,0,0.75);
+            box-shadow:0 20px 40px rgba(0,0,0,0.75);
         }
         .card-header{
             display:flex;align-items:flex-end;justify-content:space-between;
             margin-bottom:10px;
+            gap:8px;
         }
         .tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
         h2{font-size:18px;}
@@ -81,7 +86,7 @@
             display:flex;align-items:center;justify-content:space-between;
             flex-wrap:wrap;gap:10px;margin-bottom:10px;
         }
-        .buttons{display:flex;align-items:center;gap:10px;}
+        .buttons{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
         .btn{
             padding:9px 18px;border-radius:999px;border:none;
             font-size:13px;font-weight:600;text-transform:uppercase;
@@ -110,8 +115,8 @@
         .track{
             position:relative;
             width:100%;
-            max-width:420px;
-            height:480px; /* pista maior */
+            max-width:450px;
+            height:min(72vh,520px); /* grande mas sem precisar rolar na maioria das telas */
             border-radius:18px;
             padding:10px 10px 14px;
             background:conic-gradient(from 180deg,#020617,#020617 40%,#030712 70%,#020617);
@@ -129,7 +134,6 @@
             border:1px solid rgba(148,163,184,0.35);
         }
         .lane::before{
-            /* linha central pontilhada vertical */
             content:"";
             position:absolute;
             left:50%;top:0;bottom:0;
@@ -145,7 +149,6 @@
             opacity:.6;
             background-position-y:0;
         }
-        /* quando a corrida está rodando, pista "anda" */
         .track.running .lane::before{
             animation:dashMove .5s linear infinite;
         }
@@ -185,31 +188,31 @@
             color:var(--muted);
         }
         .car-dot{width:10px;height:10px;border-radius:50%;}
+        .car-dot.car1{background:var(--accent1);}
+        .car-dot.car2{background:var(--accent2);}
+        .car-dot.car3{background:var(--accent3);}
+
         .car{
             position:absolute;
             left:50%;
-            bottom:10px; /* começa embaixo */
-            width:34px;
-            height:34px;
-            border-radius:50%;
+            bottom:10px;
+            width:120px;
+            height:80px;
+            transform:translateX(-50%);
+            z-index:3;
             display:flex;
             align-items:center;
             justify-content:center;
-            font-size:11px;
-            font-weight:700;
-            text-transform:uppercase;
-            box-shadow:0 12px 20px rgba(0,0,0,0.6);
-            transform:translateX(-50%);
-            transition:bottom .08s linear;
-            z-index:3;
         }
-        .car-1{background:radial-gradient(circle at 30% 30%,#fee2e2,#ef4444);}
-        .car-2{background:radial-gradient(circle at 30% 30%,#dbeafe,#3b82f6);}
-        .car-3{background:radial-gradient(circle at 30% 30%,#dcfce7,#22c55e);}
-
-        .car.winner{
-            box-shadow:0 0 18px rgba(250,204,21,0.9);
-            outline:2px solid #facc15;
+        .car-img{
+            width:100%;
+            height:auto;
+            user-select:none;
+            pointer-events:none;
+            filter:drop-shadow(0 8px 16px rgba(0,0,0,0.7));
+        }
+        .car.winner .car-img{
+            filter:drop-shadow(0 0 16px rgba(250,204,21,0.9));
         }
 
         /* Obstáculos */
@@ -224,9 +227,9 @@
             box-shadow:0 4px 10px rgba(15,23,42,0.9);
             z-index:1;
         }
-        .obstacle-1{top:160px;}
-        .obstacle-2{top:260px;}
-        .obstacle-3{top:340px;}
+        .obstacle-1{top:170px;}
+        .obstacle-2{top:270px;}
+        .obstacle-3{top:360px;}
 
         /* DASHBOARD LADO DIREITO */
         .mini-grid{
@@ -292,13 +295,13 @@
         </div>
         <div class="logo-text">
             <strong>Fórmula DS3</strong>
-            <span>Painel da Corrida</span>
+            <span>Painel da corrida</span>
         </div>
     </div>
     <nav>
         <span class="user-info" id="infoUser"></span>
         <a href="recepcao.html">Recepção</a>
-        <a href="login.html" onclick="localStorage.removeItem('usuarioLogado')">Sair</a>
+        <a href="index.html" onclick="localStorage.removeItem('usuarioLogado')">Sair</a>
     </nav>
 </header>
 
@@ -335,10 +338,12 @@
                         <div class="obstacle obstacle-3"></div>
 
                         <div class="car-label">
-                            <div class="car-dot" style="background:var(--accent1);"></div>
+                            <div class="car-dot car1"></div>
                             Carro 1
                         </div>
-                        <div id="car1" class="car car-1">1</div>
+                        <div id="car1" class="car">
+                            <img src="FDS3 1.png" alt="Carro 1" class="car-img">
+                        </div>
                     </div>
 
                     <!-- Pista 2 -->
@@ -346,10 +351,12 @@
                         <div class="obstacle obstacle-2"></div>
 
                         <div class="car-label">
-                            <div class="car-dot" style="background:var(--accent2);"></div>
+                            <div class="car-dot car2"></div>
                             Carro 2
                         </div>
-                        <div id="car2" class="car car-2">2</div>
+                        <div id="car2" class="car">
+                            <img src="FDS3 2.png" alt="Carro 2" class="car-img">
+                        </div>
                     </div>
 
                     <!-- Pista 3 -->
@@ -358,10 +365,12 @@
                         <div class="obstacle obstacle-2"></div>
 
                         <div class="car-label">
-                            <div class="car-dot" style="background:var(--accent3);"></div>
+                            <div class="car-dot car3"></div>
                             Carro 3
                         </div>
-                        <div id="car3" class="car car-3">3</div>
+                        <div id="car3" class="car">
+                            <img src="FDS3 3.png" alt="Carro 3" class="car-img">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -371,21 +380,21 @@
             <div class="card-header">
                 <div>
                     <span class="tag">Dados do Firebase</span>
-                    <h2>Resumo de Apostas e Corridas</h2>
+                    <h2>Resumo de palpites e corridas</h2>
                 </div>
             </div>
 
             <div class="mini-grid">
                 <div class="pill">
-                    <span>Apostas no Carro 1</span>
+                    <span>Palpites no Carro 1</span>
                     <span id="apC1" class="value">0</span>
                 </div>
                 <div class="pill">
-                    <span>Apostas no Carro 2</span>
+                    <span>Palpites no Carro 2</span>
                     <span id="apC2" class="value">0</span>
                 </div>
                 <div class="pill">
-                    <span>Apostas no Carro 3</span>
+                    <span>Palpites no Carro 3</span>
                     <span id="apC3" class="value">0</span>
                 </div>
                 <div class="pill">
@@ -419,21 +428,23 @@
 </main>
 
 <script type="module">
-    // Proteção de acesso: só corrida ou master
+    // Permite: corrida, admin, master
     const userData = localStorage.getItem("usuarioLogado");
     if(!userData){
         alert("Faça login primeiro.");
-        window.location.href = "login.html";
+        window.location.href = "index.html";
     }else{
         const u = JSON.parse(userData);
-        if(u.role !== "corrida" && u.role !== "master"){
+        if(u.role !== "corrida" && u.role !== "admin" && u.role !== "master"){
             alert("Você não tem acesso à página da corrida.");
-            window.location.href = "login.html";
+            window.location.href = "index.html";
         }else{
+            const info =
+                u.role === "master" ? "(MASTER)" :
+                u.role === "admin"  ? "(ADMIN)"  :
+                                      "(CORRIDA)";
             document.getElementById("infoUser").textContent =
-                u.role === "master"
-                    ? `Logado como: ${u.email} (MASTER)`
-                    : `Logado como: ${u.email} (Corrida)`;
+                `Logado como: ${u.email} ${info}`;
         }
     }
 
@@ -476,15 +487,14 @@
     const countdownOverlay = document.getElementById("countdownOverlay");
     const countdownText    = document.getElementById("countdownText");
 
-    // Corrida (vertical: 0 = embaixo, 100 = na linha de chegada)
     const cars = [
-        { id:"car1", laneId:"lane1", nome:"Carro 1 • Red Flash", progresso:0 },
-        { id:"car2", laneId:"lane2", nome:"Carro 2 • Blue Storm", progresso:0 },
-        { id:"car3", laneId:"lane3", nome:"Carro 3 • Green Volt", progresso:0 }
+        { id:"car1", laneId:"lane1", nome:"Carro 1 • Silver Arrow", progresso:0 },
+        { id:"car2", laneId:"lane2", nome:"Carro 2 • Orange Blaze", progresso:0 },
+        { id:"car3", laneId:"lane3", nome:"Carro 3 • Red Scuderia", progresso:0 }
     ];
     let corridaAtiva = false;
     let intervalo    = null;
-    const maxProgresso = 100; // precisa chegar em 100% para vencer
+    const maxProgresso = 100;
 
     function atualizarPosicaoCarro(c){
         const laneEl = document.getElementById(c.laneId);
@@ -492,8 +502,8 @@
         const laneHeight = laneEl.clientHeight;
         const carHeight  = carEl.clientHeight;
 
-        const minBottom = 10; // início (embaixo)
-        const maxBottom = laneHeight - carHeight - 12; // perto da linha de chegada
+        const minBottom = 10;
+        const maxBottom = laneHeight - carHeight - 12;
 
         const bottomPx = minBottom + (c.progresso/100) * (maxBottom - minBottom);
         carEl.style.bottom = `${bottomPx}px`;
@@ -524,12 +534,11 @@
             document.getElementById(c.id).classList.remove("winner");
         });
 
-        // mostra contagem 3,2,1,GO
         let contador = 3;
         countdownText.textContent = "3";
         countdownOverlay.style.display = "flex";
         statusTexto.textContent = "Preparar...";
-        trackEl.classList.remove("running"); // ainda não andando
+        trackEl.classList.remove("running");
 
         const timer = setInterval(()=>{
             contador--;
@@ -543,7 +552,7 @@
             }else{
                 clearInterval(timer);
                 countdownOverlay.style.display = "none";
-                trackEl.classList.add("running"); // pista começa a "andar"
+                trackEl.classList.add("running");
                 iniciarMovimentoCarros();
             }
         },1000);
@@ -552,7 +561,7 @@
     function iniciarMovimentoCarros(){
         intervalo = setInterval(() => {
             cars.forEach(c => {
-                const incremento = Math.random()*4 + 1; // entre 1 e 5
+                const incremento = Math.random()*4 + 1;
                 c.progresso += incremento;
                 if(c.progresso > maxProgresso){
                     c.progresso = maxProgresso;
@@ -560,13 +569,10 @@
                 atualizarPosicaoCarro(c);
             });
 
-            // verifica se alguém chegou
             const chegados = cars.filter(c=>c.progresso >= maxProgresso);
             if(chegados.length > 0){
-                // pega quem tem maior progresso entre os chegados
                 const maior = Math.max(...chegados.map(c=>c.progresso));
                 const candidatos = chegados.filter(c=>c.progresso === maior);
-                // se empatar, sorteia entre eles
                 const vencedor = candidatos[Math.floor(Math.random()*candidatos.length)];
                 encerrarCorrida(vencedor);
             }
@@ -618,7 +624,7 @@
         }
     }
 
-    // Estatísticas de corridas
+    // Estatísticas
     onValue(statsRef,(snapshot)=>{
         if(snapshot.exists()){
             const s = snapshot.val();
@@ -632,7 +638,7 @@
         }
     });
 
-    // Apostas
+    // Palpites
     onValue(apostasRef,(snapshot)=>{
         let c1=0,c2=0,c3=0;
         const lista = [];
@@ -652,7 +658,7 @@
         listaApostas.innerHTML = "";
         const ultimas = lista.slice(-8).reverse();
         if(ultimas.length === 0){
-            listaApostas.innerHTML = "<p style='font-size:12px;color:var(--muted);'>Nenhuma aposta cadastrada ainda.</p>";
+            listaApostas.innerHTML = "<p style='font-size:12px;color:var(--muted);'>Nenhum palpite cadastrado ainda.</p>";
         }else{
             ultimas.forEach(v=>{
                 const div = document.createElement("div");
