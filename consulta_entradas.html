@@ -5,50 +5,109 @@
   <title>Consultar Entradas - Fórmula DS3</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    :root{--text:#f9fafb;--muted:#9ca3af;--green:#16a34a;--red:#ef4444;--gray:#6b7280;}
+    :root{
+      --bg:#020617; --text:#f9fafb; --muted:#9ca3af;
+      --green:#16a34a; --red:#ef4444; --card:#071122;
+      --accent:#f97316;
+    }
     *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
-    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text)}
-    header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.35)}
-    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);padding-top:64px;}
+    header{
+      position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.12);z-index:60;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-box{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center}
+    .logo-box img{width:36px;height:36px;object-fit:contain}
+    .brand-text strong{display:block;font-size:15px}
+    .brand-text span{font-size:12px;color:var(--muted)}
+    nav{display:flex;align-items:center;gap:8px}
+    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.12)}
+    .menu-toggle{display:none;border:none;background:transparent;color:var(--text);font-size:22px;padding:6px;border-radius:8px;cursor:pointer}
     main{max-width:1200px;margin:18px auto;padding:12px}
-    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-    input,select{padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,0.12);background:rgba(10,16,26,0.7);color:var(--text)}
-    table{width:100%;border-collapse:collapse;margin-top:10px;background:linear-gradient(180deg,#071122,#021026);border-radius:8px;overflow:hidden}
-    thead th{background:rgba(255,255,255,0.03);padding:12px 10px;text-align:left;position:sticky;top:0}
-    tbody td{padding:10px;border-bottom:1px dashed rgba(75,85,99,0.3)}
-    .empty{color:var(--muted);padding:12px 0}
-    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
-    .btn-presente{background:var(--green);color:#fff}
-    .btn-ausente{background:var(--red);color:#fff}
-    .btn-lem-sim{background:var(--green);color:#fff}
+    h2{font-size:20px;margin-bottom:8px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+    input,select{padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,0.08);background:rgba(10,16,26,0.6);color:var(--text)}
+    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer;background:transparent;color:var(--text);border:1px solid rgba(148,163,184,0.08)}
+    .btn-presente{background:var(--green);color:#fff;border:none}
+    .btn-ausente{background:var(--red);color:#fff;border:none}
+    .btn-lem-sim{background:var(--green);color:#fff;border:none}
     .btn-lem-nao{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
     .small-muted{font-size:12px;color:var(--muted)}
     .filters-group{display:flex;gap:8px;align-items:center}
+    .table-wrap{margin-top:12px;overflow:auto;border-radius:8px}
+    table{width:100%;border-collapse:collapse;background:linear-gradient(180deg,var(--card),#021026);min-width:900px}
+    thead th{background:rgba(255,255,255,0.02);padding:12px 10px;text-align:left;position:sticky;top:0;font-size:13px}
+    tbody td{padding:10px;border-bottom:1px dashed rgba(75,85,99,0.18);font-size:14px}
+    .empty{color:var(--muted);padding:12px 0}
+    /* CARD fallback for mobile */
+    .card-list{display:none;gap:12px}
+    .entry-card{background:linear-gradient(180deg,#071022,#021026);border-radius:10px;padding:12px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 8px 20px rgba(0,0,0,0.5)}
+    .entry-row{display:flex;flex-direction:column;gap:8px}
+    .entry-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .entry-meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+    /* responsive */
+    @media (max-width:1000px){
+      .brand-text strong{font-size:14px}
+      table{min-width:820px}
+    }
+    @media (max-width:820px){
+      nav{display:none;position:fixed;top:64px;right:12px;background:linear-gradient(180deg, rgba(2,6,23,0.98), rgba(2,6,23,0.95));padding:12px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.6);flex-direction:column;gap:8px;z-index:70;width:220px}
+      nav.open{display:flex}
+      .menu-toggle{display:inline-flex}
+    }
+    @media (max-width:720px){
+      .controls{flex-direction:column;align-items:stretch}
+      .filters-group{flex-wrap:wrap}
+      .table-wrap{display:none}
+      .card-list{display:flex;flex-direction:column}
+      .entry-card{padding:14px}
+      .entry-meta{font-size:12px}
+      thead th, tbody td{font-size:14px}
+      h2{font-size:18px}
+    }
+
+    /* Accessibility small tweaks */
+    button:focus, a:focus, input:focus, select:focus{outline:2px solid rgba(249,115,22,0.18);outline-offset:2px}
   </style>
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px"><img src="logo-fds3.png" style="width:36px" alt="logo"></div><div><strong>Fórmula DS3</strong><br><span style="font-size:12px;color:var(--muted)" id="infoUser"></span></div></div>
-  <nav><a href="dashboard.html">Dashboard</a><a href="recepcao.html">Recepção</a><a href="consulta_entradas.html">Consultar</a><a href="admin.html">Admin</a><a href="corrida.html">Corrida</a><a href="index.html" id="logoutBtn">Sair</a></nav>
+  <div class="brand">
+    <div class="logo-box"><img src="logo-fds3.png" alt="logo"></div>
+    <div class="brand-text"><strong>Fórmula DS3</strong><span id="infoUser"> </span></div>
+  </div>
+
+  <div>
+    <button id="menuToggle" class="menu-toggle" aria-label="Abrir menu">☰</button>
+    <nav id="mainNav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="recepcao.html">Recepção</a>
+      <a href="consulta_entradas.html">Consultar</a>
+      <a href="admin.html">Admin</a>
+      <a href="corrida.html">Corrida</a>
+      <a href="index.html" id="logoutBtn">Sair</a>
+    </nav>
+  </div>
 </header>
 
 <main>
   <h2>Consultar entradas</h2>
 
   <div class="controls" style="margin-top:12px">
-    <input id="searchName" placeholder="Pesquisar por nome..." style="min-width:260px"/>
-    <input id="searchTurma" placeholder="Pesquisar por turma (ex: A)" style="width:120px"/>
-    <div class="filters-group">
-      <select id="filterTipo"><option value="">Filtrar por Tipo</option><option value="Visitante">Visitante</option><option value="Avaliador">Avaliador</option></select>
-      <select id="filterSerie"><option value="">Filtrar por Série</option><option value="9º Ano">9º Ano</option><option value="1º Ano">1º Ano</option><option value="2º Ano">2º Ano</option><option value="3º Ano">3º Ano</option></select>
+    <input id="searchName" placeholder="Pesquisar por nome..." style="min-width:220px;flex:1"/>
+    <input id="searchTurma" placeholder="Turma (ex: A)" style="width:110px"/>
+    <div class="filters-group" style="margin-left:auto">
+      <select id="filterTipo"><option value="">Tipo</option><option value="Visitante">Visitante</option><option value="Avaliador">Avaliador</option></select>
+      <select id="filterSerie"><option value="">Série</option><option value="9º Ano">9º Ano</option><option value="1º Ano">1º Ano</option><option value="2º Ano">2º Ano</option><option value="3º Ano">3º Ano</option></select>
       <select id="filterPresenca"><option value="">Presença</option><option value="presente">Presente</option><option value="ausente">Ausente</option></select>
       <select id="filterLembr"><option value="">Lembrancinha</option><option value="true">Entregue</option><option value="false">Não entregue</option></select>
+      <button id="btnClear" class="btn">Limpar</button>
     </div>
-    <button id="btnClear" class="btn" style="background:transparent;border:1px solid rgba(148,163,184,0.08);color:var(--text)">Limpar</button>
   </div>
 
-  <div style="margin-top:12px;overflow:auto">
-    <table id="resultsTable">
+  <!-- Table for desktop / tablet -->
+  <div class="table-wrap" id="tableWrap">
+    <table id="resultsTable" role="table" aria-label="Resultados">
       <thead>
         <tr>
           <th>Nome</th><th>Série</th><th>Turma</th><th>Tipo</th><th>Categoria</th><th>Carro</th>
@@ -59,9 +118,18 @@
     </table>
     <div id="noResults" class="empty" style="display:none">Nenhuma entrada encontrada.</div>
   </div>
+
+  <!-- Card list for mobile -->
+  <div class="card-list" id="cardList" aria-live="polite"></div>
 </main>
 
 <script type="module">
+/* NAV hamburger */
+const menuToggle = document.getElementById('menuToggle');
+const mainNav = document.getElementById('mainNav');
+menuToggle.addEventListener('click', ()=> mainNav.classList.toggle('open'));
+document.addEventListener('click', (e)=>{ if(window.innerWidth <= 820 && !e.target.closest('header')) mainNav.classList.remove('open'); });
+
 /* ACCESS-BLOCK */
 const ALLOWED_ROLES = ["admin","master","recepcao","corrida"];
 const infoUserEl = document.getElementById("infoUser"), logoutBtn = document.getElementById("logoutBtn");
@@ -74,10 +142,16 @@ function showAccessBlocked(message){
   const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
   const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
   const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
-  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"}); btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
+  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"});
+  btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
   inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); card.appendChild(inner); document.body.appendChild(card);
 }
-(function checkAccess(){ const u = getUser(); if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return } if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return } infoUserEl.textContent = `Logado como: ${u.email}` })();
+(function checkAccess(){
+  const u = getUser();
+  if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return }
+  if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return }
+  infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : ""}`;
+})();
 if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
 
 /* firebase */
@@ -93,29 +167,35 @@ const firebaseConfig = {
   messagingSenderId: "947616785928",
   appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const apostasRef = ref(db, "apostas");
 
+/* UI references */
 const tbody = document.getElementById("tbody"), noResults = document.getElementById("noResults");
 const searchName = document.getElementById("searchName"), searchTurma = document.getElementById("searchTurma");
 const filterTipo = document.getElementById("filterTipo"), filterSerie = document.getElementById("filterSerie");
 const filterPresenca = document.getElementById("filterPresenca"), filterLembr = document.getElementById("filterLembr");
 const btnClear = document.getElementById("btnClear");
+const tableWrap = document.getElementById("tableWrap"), cardList = document.getElementById("cardList");
 
-let allEntries = []; // array de { key, val }
+let allEntries = []; // { key, val }
 
+/* listen realtime */
 onValue(apostasRef, (snapshot)=>{
   allEntries = [];
   if(snapshot.exists()){
     snapshot.forEach(child=>{
-      allEntries.push({ key: child.key, val: child.val() });
+      const v = child.val() || {};
+      // normalize fields for backward compatibility
+      if(!v.statusPresenca) v.statusPresenca = v.presente ? "presente" : (v.statusPresenca || "presente");
+      allEntries.push({ key: child.key, val: v });
     });
   }
   render();
 });
 
+/* helpers */
 function tempoFormatadoFromSegundos(sec){
   sec = Math.max(0, Math.floor(sec||0));
   const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60); const s = sec%60;
@@ -124,10 +204,8 @@ function tempoFormatadoFromSegundos(sec){
 }
 
 async function togglePresenca(key, entry){
-  // entry.val is the object
   const current = entry.statusPresenca || "presente";
   if(current === "presente"){
-    // marcar ausente: salvar saidaHora e tempo
     const saida = new Date().toISOString();
     let tempoSeg = 0;
     try{
@@ -146,7 +224,6 @@ async function togglePresenca(key, entry){
     };
     await update(ref(db, `apostas/${key}`), updates);
   }else{
-    // marcar presente novamente: limpar saida e tempo, manter dataHora original
     const updates = {
       statusPresenca: "presente",
       saidaHora: "",
@@ -163,6 +240,7 @@ async function toggleLembrancinha(key, entry){
   await update(ref(db, `apostas/${key}`), updates);
 }
 
+/* render results (table + cards) */
 function render(){
   const qName = (searchName.value || "").toLowerCase().trim();
   const qTurma = (searchTurma.value || "").toLowerCase().trim();
@@ -179,15 +257,19 @@ function render(){
     if(serie && (e.serie || "") !== serie) return false;
     if(pres && (e.statusPresenca || "") !== pres) return false;
     if(lembr){
-      const boolVal = String(e.lembrancinha) === "true";
+      const boolVal = !!e.lembrancinha;
       if(String(boolVal) !== lembr) return false;
     }
     return true;
   }).sort((a,b)=> new Date(b.val.dataHora || 0) - new Date(a.val.dataHora || 0));
 
+  // table render
   tbody.innerHTML = "";
+  cardList.innerHTML = "";
+
   if(filtered.length === 0){
     noResults.style.display = "block";
+    tableWrap.style.display = (window.innerWidth > 720) ? "block" : "none";
     return;
   }
   noResults.style.display = "none";
@@ -195,64 +277,90 @@ function render(){
   filtered.forEach(item=>{
     const key = item.key;
     const v = item.val;
-    const tr = document.createElement("tr");
-
     const date = v.dataHora ? new Date(v.dataHora).toLocaleString() : "";
     const saida = v.saidaHora ? new Date(v.saidaHora).toLocaleString() : "";
-    const tempo = v.tempoFormatado || "";
+    const tempo = v.tempoFormatado || (v.tempoSegundos ? tempoFormatadoFromSegundos(v.tempoSegundos) : "");
 
-    // Presença button (Opção B: verde = presente / vermelho = ausente)
-    let presBtn = document.createElement("button");
-    presBtn.className = 'btn';
-    if((v.statusPresenca || "presente") === "presente"){
-      presBtn.classList.add("btn-presente");
-      presBtn.textContent = "Presente";
-    }else{
-      presBtn.classList.add("btn-ausente");
-      presBtn.textContent = "Ausente";
-    }
-    presBtn.onclick = () => togglePresenca(key, v).catch(err=>console.error(err));
-
-    // Lembrancinha button (verde = entregou / cinza = não entregou)
-    let lemBtn = document.createElement("button");
-    lemBtn.className = 'btn';
-    if(!!v.lembrancinha){
-      lemBtn.classList.add("btn-lem-sim");
-      lemBtn.textContent = "Entregue";
-    }else{
-      lemBtn.classList.add("btn-lem-nao");
-      lemBtn.textContent = "Não entregue";
-    }
-    lemBtn.onclick = () => toggleLembrancinha(key, v).catch(err=>console.error(err));
-
+    // create table row
+    const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${v.nome || ""}</td>
       <td>${v.serie || ""}</td>
       <td>${v.turma || ""}</td>
       <td>${v.tipo || ""}</td>
       <td>${v.categoria || ""}</td>
-      <td>${v.carro || ""}</td>
+      <td>${v.carro ? (v.carro.replace('carro1','Carro 1').replace('carro2','Carro 2').replace('carro3','Carro 3')) : ''}</td>
       <td></td>
       <td></td>
       <td>${saida}</td>
       <td>${tempo}</td>
       <td>${date}</td>
     `;
-
-    // replace empty cells for presence and lembr with our buttons
-    tr.children[6].innerHTML = "";
+    // presence button
+    const presBtn = document.createElement("button");
+    presBtn.className = 'btn';
+    if((v.statusPresenca || "presente") === "presente"){
+      presBtn.classList.add("btn-presente"); presBtn.textContent = "Presente";
+    }else{ presBtn.classList.add("btn-ausente"); presBtn.textContent = "Ausente"; }
+    presBtn.onclick = ()=> togglePresenca(key, v).catch(err=>console.error(err));
     tr.children[6].appendChild(presBtn);
 
-    tr.children[7].innerHTML = "";
+    // lembrancinha button
+    const lemBtn = document.createElement("button");
+    lemBtn.className = 'btn';
+    if(!!v.lembrancinha){ lemBtn.classList.add("btn-lem-sim"); lemBtn.textContent = "Entregue"; }
+    else { lemBtn.classList.add("btn-lem-nao"); lemBtn.textContent = "Não entregue"; }
+    lemBtn.onclick = ()=> toggleLembrancinha(key, v).catch(err=>console.error(err));
     tr.children[7].appendChild(lemBtn);
 
     tbody.appendChild(tr);
+
+    // create mobile card
+    const card = document.createElement("div");
+    card.className = "entry-card";
+    card.innerHTML = `
+      <div class="entry-row">
+        <div class="entry-top">
+          <div><strong style="font-size:15px">${v.nome || ""}</strong><div class="small-muted">${v.tipo || ""} • ${v.categoria || ""}</div></div>
+          <div style="text-align:right"><div class="small-muted">${date}</div><div style="margin-top:6px">${v.carro ? (v.carro.replace('carro1','Carro 1').replace('carro2','Carro 2').replace('carro3','Carro 3')) : ''}</div></div>
+        </div>
+        <div class="entry-meta">
+          <div>Série: ${v.serie || "-"}</div>
+          <div>Turma: ${v.turma || "-"}</div>
+          <div>Saída: ${saida || "-"}</div>
+          <div>Tempo: ${tempo || "-"}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          <!-- buttons -->
+        </div>
+      </div>
+    `;
+    // attach buttons to card
+    const cardButtonsDiv = card.querySelector('div > div:nth-child(3)');
+    const cardPres = presBtn.cloneNode(true);
+    const cardLem = lemBtn.cloneNode(true);
+    // rebind handlers for clones
+    cardPres.onclick = ()=> togglePresenca(key, v).catch(err=>console.error(err));
+    cardLem.onclick = ()=> toggleLembrancinha(key, v).catch(err=>console.error(err));
+    cardButtonsDiv.appendChild(cardPres);
+    cardButtonsDiv.appendChild(cardLem);
+
+    cardList.appendChild(card);
   });
+
+  // show/hide container depending on width
+  if(window.innerWidth > 720){ tableWrap.style.display = "block"; cardList.style.display = "none"; }
+  else { tableWrap.style.display = "none"; cardList.style.display = "flex"; }
 }
 
+/* events */
 [searchName, searchTurma, filterTipo, filterSerie, filterPresenca, filterLembr].forEach(el=> el.addEventListener("input", render));
 btnClear.addEventListener("click", ()=>{ searchName.value=""; searchTurma.value=""; filterTipo.value=""; filterSerie.value=""; filterPresenca.value=""; filterLembr.value=""; render(); });
 
+/* responsive re-render on resize to toggle table/card view */
+window.addEventListener('resize', ()=> {
+  if(allEntries.length) render();
+});
 </script>
 </body>
 </html>
