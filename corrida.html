@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <title>Corrida - Fórmula DS3</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    :root{
+      --text:#f9fafb;
+      --muted:#9ca3af;
+      --accent1:#ef4444;
+      --accent2:#3b82f6;
+      --accent3:#22c55e;
+      --bg1: #020617;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);}
+    header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.35)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-circle{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px}
+    .logo-circle img{width:36px;height:36px;object-fit:contain}
+    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+    nav a:hover{background:rgba(37,99,235,0.12)}
+    main{max-width:1100px;margin:16px auto;padding:12px}
+    .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:12px}
+    .card{background:radial-gradient(circle at top,#020617,#030712);padding:16px;border-radius:12px;border:1px solid rgba(148,163,184,0.08);box-shadow:0 14px 28px rgba(0,0,0,0.6)}
+    .track{position:relative;width:100%;height:64vh;border-radius:12px;display:flex;gap:10px;background:conic-gradient(from 180deg,#020617,#030712);padding:12px;overflow:hidden}
+    .lane{flex:1;border-radius:12px;position:relative;border:1px solid rgba(148,163,184,0.12);overflow:hidden;background:linear-gradient(180deg,#020617,#020617)}
+    .lane::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:3px;transform:translateX(-50%);background:repeating-linear-gradient(to bottom,rgba(209,213,219,0.7) 0, rgba(209,213,219,0.7) 10px, transparent 10px, transparent 20px);opacity:.6}
+    .track.running .lane::before{animation:dashMove .5s linear infinite}
+    @keyframes dashMove{0%{background-position-y:0;}100%{background-position-y:20px;}}
+    .finish-bar{position:absolute;top:12px;left:12px;right:12px;height:6px;background:repeating-linear-gradient(to right,#e5e7eb 0 10px,#020617 10px 20px);border-radius:10px;z-index:5;box-shadow:0 0 12px rgba(248,250,252,0.65)}
+    .car-label{position:absolute;left:8px;bottom:8px;font-size:13px;color:var(--muted);z-index:4}
+    .car{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;width:140px;height:84px;display:flex;align-items:center;justify-content:center;z-index:6;transition:bottom .08s linear}
+    .car img{width:100%;height:auto;user-select:none;pointer-events:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,0.7))}
+    .car.winner .car img{filter:drop-shadow(0 0 24px rgba(250,204,21,0.9))}
+    .controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .btn{padding:10px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:white;cursor:pointer}
+    .btn.secondary{background:transparent;border:1px solid rgba(148,163,184,0.12)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .panel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+    .pill{padding:10px;border-radius:10px;background:rgba(2,6,23,0.6);border:1px solid rgba(148,163,184,0.06)}
+    .winner-box{margin-top:12px;color:var(--muted)}
+    #countdownOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(15,23,42,0.92);z-index:9998}
+    #countdownText{font-size:7rem;font-weight:900;letter-spacing:6px;text-transform:uppercase;text-shadow:0 0 25px rgba(248,250,252,0.8);animation:pulse 0.9s ease-in-out infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+    #winnerOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.8));z-index:9999}
+    #winnerCard{width:94%;max-width:820px;border-radius:14px;padding:24px;background:linear-gradient(135deg,#0f172a,#020617);box-shadow:0 30px 60px rgba(0,0,0,0.7);text-align:center;color:var(--text)}
+    #winnerCard .crown{font-size:72px}
+    #winnerTitle{font-size:36px;margin:6px 0}
+    @media(max-width:900px){ .grid{grid-template-columns:1fr} .track{height:56vh} #countdownText{font-size:5rem} #winnerTitle{font-size:28px} }
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo-circle"><img src="logo-fds3.png" alt="FDS3"></div>
+    <div><strong>Fórmula DS3</strong><br><span style="font-size:12px;color:var(--muted)" id="infoUser"></span></div>
+  </div>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="recepcao.html">Recepção</a>
+    <a href="consulta_entradas.html">Consultar</a>
+    <a href="admin.html">Admin</a>
+    <a href="corrida.html">Corrida</a>
+    <a href="index.html" id="logoutBtn">Sair</a>
+  </nav>
+</header>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <div class="controls">
+        <div>
+          <button id="btnIniciar" class="btn">▶ Iniciar corrida</button>
+          <button id="btnReiniciar" class="btn secondary" disabled>↺ Reiniciar</button>
+        </div>
+        <div style="color:var(--muted)">Status: <span id="statusTexto">Aguardando início...</span></div>
+      </div>
+
+      <div class="track" id="track">
+        <div class="finish-bar"></div>
+
+        <div class="lane" id="lane1">
+          <div class="car-label">Carro 1 • Ferrari</div>
+          <div id="car1" class="car"><img src="FDS3 1.png" alt="Carro 1"></div>
+        </div>
+
+        <div class="lane" id="lane2">
+          <div class="car-label">Carro 2 • MCLaren</div>
+          <div id="car2" class="car"><img src="FDS3 2.png" alt="Carro 2"></div>
+        </div>
+
+        <div class="lane" id="lane3">
+          <div class="car-label">Carro 3 • Mercedes</div>
+          <div id="car3" class="car"><img src="FDS3 3.png" alt="Carro 3"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h2>Resumo</h2>
+      <div class="panel-grid">
+        <div class="pill"><small style="color:var(--muted)">Palpites Carro 1</small><div id="apC1" style="font-weight:700;font-size:18px">0</div></div>
+        <div class="pill"><small style="color:var(--muted)">Palpites Carro 2</small><div id="apC2" style="font-weight:700;font-size:18px">0</div></div>
+        <div class="pill"><small style="color:var(--muted)">Palpites Carro 3</small><div id="apC3" style="font-weight:700;font-size:18px">0</div></div>
+        <div class="pill"><small style="color:var(--muted)">Total corridas</small><div id="totalCorridas" style="font-weight:700;font-size:18px">0</div></div>
+      </div>
+
+      <div style="margin-top:10px; display:grid; grid-template-columns:repeat(3,1fr); gap:8px">
+        <div class="pill"><small style="color:var(--muted)">Vitórias Carro 1</small><div id="vCarro1" style="font-weight:700;font-size:16px">0</div></div>
+        <div class="pill"><small style="color:var(--muted)">Vitórias Carro 2</small><div id="vCarro2" style="font-weight:700;font-size:16px">0</div></div>
+        <div class="pill"><small style="color:var(--muted)">Vitórias Carro 3</small><div id="vCarro3" style="font-weight:700;font-size:16px">0</div></div>
+      </div>
+
+      <div class="winner-box" id="boxVencedor">Nenhuma corrida realizada ainda.</div>
+    </aside>
+  </div>
+</main>
+
+<!-- countdown overlay -->
+<div id="countdownOverlay"><div id="countdownText">3</div></div>
+
+<!-- winner overlay (SEM imagem) -->
+<div id="winnerOverlay">
+  <div id="winnerCard">
+    <div class="crown">👑</div>
+    <h1 id="winnerTitle">Vencedor</h1>
+    <p id="winnerSubtitle" style="color:var(--muted)">1º lugar — Parabéns!</p>
+    <div style="margin-top:14px"><button id="closeWinner" class="btn">Fechar</button></div>
+  </div>
+</div>
+
+<script type="module">
+/* ACCESS-BLOCK */
+const ALLOWED_ROLES = ["corrida","admin","master"];
+const infoUserEl = document.getElementById("infoUser");
+const logoutBtn = document.getElementById("logoutBtn");
+function getUser(){ try { return JSON.parse(localStorage.getItem("usuarioLogado")); } catch(e){ return null; } }
+function showAccessBlocked(message){
+  document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
+  if(logoutBtn) logoutBtn.disabled=true;
+  if(document.getElementById("accessBlockedCard")) return;
+  const card=document.createElement("div"); card.id="accessBlockedCard";
+  Object.assign(card.style,{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg, rgba(2,6,23,0.8), rgba(2,6,23,0.95))",zIndex:"99999"});
+  const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
+  const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
+  const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
+  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador";
+  Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"});
+  btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
+  inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); card.appendChild(inner); document.body.appendChild(card);
+}
+(function checkAccess(){
+  const u = getUser();
+  if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return; }
+  if(!ALLOWED_ROLES.includes(u.role)){
+    showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil.");
+    infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`;
+    return;
+  }
+  infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : "(CORRIDA)"}`;
+})();
+if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
+
+/* firebase + corrida */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getDatabase, ref, onValue, get, set, push, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
+  authDomain: "eeba-9dfd0.firebaseapp.com",
+  databaseURL: "https://eeba-9dfd0-default-rtdb.firebaseio.com",
+  projectId: "eeba-9dfd0",
+  storageBucket: "eeba-9dfd0.firebasestorage.app",
+  messagingSenderId: "947616785928",
+  appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const apostasRef = ref(db, "apostas");
+const statsRef = ref(db, "statsCorrida");
+const corridasRef = ref(db, "corridas");
+
+/* elementos */
+const btnIniciar = document.getElementById("btnIniciar");
+const btnReiniciar = document.getElementById("btnReiniciar");
+const statusTexto = document.getElementById("statusTexto");
+const trackEl = document.getElementById("track");
+const apC1 = document.getElementById("apC1");
+const apC2 = document.getElementById("apC2");
+const apC3 = document.getElementById("apC3");
+const totalCorridas = document.getElementById("totalCorridas");
+const vCarro1El = document.getElementById("vCarro1");
+const vCarro2El = document.getElementById("vCarro2");
+const vCarro3El = document.getElementById("vCarro3");
+const boxVencedor = document.getElementById("boxVencedor");
+const countdownOverlay = document.getElementById("countdownOverlay");
+const countdownText = document.getElementById("countdownText");
+const winnerOverlay = document.getElementById("winnerOverlay");
+const winnerTitle = document.getElementById("winnerTitle");
+const closeWinner = document.getElementById("closeWinner");
+
+/* carros */
+const cars = [
+  { id: "car1", laneId: "lane1", nome: "Carro 1 • Ferrari", progresso: 0, el: document.getElementById("car1") },
+  { id: "car2", laneId: "lane2", nome: "Carro 2 • MCLaren", progresso: 0, el: document.getElementById("car2") },
+  { id: "car3", laneId: "lane3", nome: "Carro 3 • Mercedes", progresso: 0, el: document.getElementById("car3") }
+];
+
+let intervalo = null;
+let corridaEncerrada = false; // FLAG para evitar múltiplos encerramentos
+const maxProgresso = 100;
+
+/* util */
+function atualizarPosicaoCarro(c){
+  const laneEl = document.getElementById(c.laneId);
+  const carEl  = c.el;
+  const laneHeight = laneEl.clientHeight;
+  const carHeight  = carEl.clientHeight;
+  const minBottom = 10;
+  const maxBottom = laneHeight - carHeight - 12;
+  const bottomPx = minBottom + (c.progresso/100) * (maxBottom - minBottom);
+  carEl.style.bottom = `${bottomPx}px`;
+}
+
+function resetCars(){
+  corridaEncerrada = false;
+  if(intervalo){ clearInterval(intervalo); intervalo = null; }
+  cars.forEach(c => { c.progresso = 0; atualizarPosicaoCarro(c); c.el.classList.remove("winner"); });
+  trackEl.classList.remove("running");
+  statusTexto.textContent = "Aguardando início...";
+  boxVencedor.innerHTML = 'Nenhuma corrida realizada ainda.';
+  btnReiniciar.disabled = true;
+}
+
+/* contagem regressiva 3-2-1-GO */
+function iniciarCorrida(){
+  if(intervalo || corridaEncerrada) return;
+  btnIniciar.disabled = true;
+  btnReiniciar.disabled = true;
+
+  // reset visual
+  cars.forEach(c => { c.progresso = 0; atualizarPosicaoCarro(c); c.el.classList.remove("winner"); });
+
+  let contador = 3;
+  countdownText.textContent = "3";
+  countdownOverlay.style.display = "flex";
+  statusTexto.textContent = "Preparar...";
+  trackEl.classList.remove("running");
+
+  const timer = setInterval(()=>{
+    contador--;
+    if(contador === 2) countdownText.textContent = "2";
+    else if(contador === 1) countdownText.textContent = "1";
+    else if(contador === 0){
+      countdownText.textContent = "GO!";
+      statusTexto.textContent = "Corrida em andamento...";
+      setTimeout(()=> {
+        countdownOverlay.style.display = "none";
+        trackEl.classList.add("running");
+        iniciarMovimentoCarros();
+      }, 650);
+      clearInterval(timer);
+    }
+  },1000);
+}
+
+/* movimento dos carros */
+function iniciarMovimentoCarros(){
+  if(intervalo) return;
+  intervalo = setInterval(() => {
+    cars.forEach(c => {
+      const incremento = Math.random()*4 + 1; // 1 a 5
+      c.progresso += incremento;
+      if(c.progresso > maxProgresso) c.progresso = maxProgresso;
+      atualizarPosicaoCarro(c);
+    });
+
+    const chegados = cars.filter(c => c.progresso >= maxProgresso);
+    if(chegados.length > 0){
+      // evita que múltiplos encerramentos ocorram
+      if(corridaEncerrada) return;
+      const maior = Math.max(...chegados.map(c => c.progresso));
+      const candidatos = chegados.filter(c => c.progresso === maior);
+      const vencedor = candidatos[Math.floor(Math.random()*candidatos.length)];
+      encerrarCorrida(vencedor);
+    }
+  }, 80);
+}
+
+async function encerrarCorrida(vencedor){
+  if(corridaEncerrada) return; // proteção extra
+  corridaEncerrada = true;
+
+  if(intervalo){ clearInterval(intervalo); intervalo = null; }
+  trackEl.classList.remove("running");
+
+  // marcar só o vencedor
+  cars.forEach(c => c.el.classList.remove("winner"));
+  vencedor.el.classList.add("winner");
+
+  const nomeCurto = vencedor.nome;
+  statusTexto.textContent = `Corrida finalizada! Vencedor: ${nomeCurto}`;
+  boxVencedor.innerHTML = `<strong>${nomeCurto}</strong> venceu essa bateria! Resultado salvo no Firebase. 🏁`;
+
+  btnIniciar.disabled = false;
+  btnReiniciar.disabled = false;
+
+  // mostrar overlay com NOME grande (SEM imagem)
+  winnerTitle.textContent = nomeCurto;
+  document.getElementById("winnerOverlay").style.display = "flex";
+
+  // salvar/atualizar stats no Firebase (incrementa corretamente)
+  try{
+    // obtém os dados atuais
+    const sSnap = await get(statsRef);
+    const dadosAtuais = sSnap.exists() ? sSnap.val() : {};
+    // normaliza keys
+    const total = (dadosAtuais.totalCorridas || 0) + 1;
+    const v1 = (dadosAtuais.vitoriasCarro1 || dadosAtuais.vitorias_carro1 || 0);
+    const v2 = (dadosAtuais.vitoriasCarro2 || dadosAtuais.vitorias_carro2 || 0);
+    const v3 = (dadosAtuais.vitoriasCarro3 || dadosAtuais.vitorias_carro3 || 0);
+
+    const novo = {
+      totalCorridas: total,
+      vitoriasCarro1: v1 + (vencedor.id === "car1" ? 1 : 0),
+      vitoriasCarro2: v2 + (vencedor.id === "car2" ? 1 : 0),
+      vitoriasCarro3: v3 + (vencedor.id === "car3" ? 1 : 0)
+    };
+
+    // grava dado atualizado (set substitui; aqui queremos estado atual completo)
+    await set(statsRef, novo);
+
+    // registra evento de corrida
+    await push(corridasRef, { vencedor: vencedor.id, dataHora: new Date().toISOString() });
+  }catch(err){
+    console.error("Erro ao salvar resultado:", err);
+  }
+}
+
+/* bind botões */
+btnIniciar.addEventListener("click", iniciarCorrida);
+btnReiniciar.addEventListener("click", resetCars);
+document.getElementById("closeWinner").addEventListener("click", ()=> document.getElementById("winnerOverlay").style.display = "none");
+
+/* inicial */
+resetCars();
+
+/* contadores palpites em tempo real */
+onValue(apostasRef, snapshot => {
+  let c1=0,c2=0,c3=0;
+  if(snapshot.exists()){
+    snapshot.forEach(child => {
+      const v = child.val();
+      if(v.carro === "carro1") c1++;
+      if(v.carro === "carro2") c2++;
+      if(v.carro === "carro3") c3++;
+    });
+  }
+  apC1.textContent = c1;
+  apC2.textContent = c2;
+  apC3.textContent = c3;
+});
+
+/* atualizar stats em tempo real (totalCorridas + vitórias) */
+onValue(statsRef, snap => {
+  if(snap.exists()){
+    const s = snap.val();
+    // lidar com possíveis variações de nomes de campos
+    const total = s.totalCorridas ?? s.total_corridas ?? 0;
+    const v1 = s.vitoriasCarro1 ?? s.vitorias_carro1 ?? 0;
+    const v2 = s.vitoriasCarro2 ?? s.vitorias_carro2 ?? 0;
+    const v3 = s.vitoriasCarro3 ?? s.vitorias_carro3 ?? 0;
+
+    totalCorridas.textContent = total;
+    vCarro1El.textContent = v1;
+    vCarro2El.textContent = v2;
+    vCarro3El.textContent = v3;
+  }else{
+    totalCorridas.textContent = 0;
+    vCarro1El.textContent = 0;
+    vCarro2El.textContent = 0;
+    vCarro3El.textContent = 0;
+  }
+});
+
+/* garante posição inicial correta ao redimensionar */
+window.addEventListener("resize", ()=> cars.forEach(c => atualizarPosicaoCarro(c)));
+</script>
+</body>
+</html>

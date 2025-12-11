@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Admin - Gestão de Acessos</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    :root{--bg:#020617;--text:#f9fafb;--muted:#9ca3af;--accent:#ef4444;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);}
+    header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(148,163,184,0.35);background:rgba(2,6,23,0.95)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-circle{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px}
+    .logo-circle img{width:36px;height:36px;object-fit:contain}
+    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+    main{max-width:1100px;margin:16px auto;padding:12px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .card{background:radial-gradient(circle at top,#020617,#030712);padding:16px;border-radius:12px;border:1px solid rgba(148,163,184,0.08);box-shadow:0 14px 28px rgba(0,0,0,0.6)}
+    input,select{padding:9px;border-radius:8px;border:1px solid rgba(148,163,184,0.12);background:rgba(10,16,26,0.7);color:var(--text)}
+    .btn{padding:9px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:white;cursor:pointer}
+    .btn-small{padding:6px 10px;border-radius:8px;background:transparent;border:1px solid rgba(148,163,184,0.12);color:var(--text);cursor:pointer}
+    .user-row{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px dashed rgba(75,85,99,0.14)}
+    .empty{color:var(--muted)}
+  </style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="logo-circle"><img src="logo-fds3.png" alt="FDS3"></div><div><strong>Fórmula DS3</strong><br><span style="font-size:12px;color:var(--muted)" id="infoUser"></span></div></div>
+  <nav><a href="dashboard.html">Dashboard</a><a href="recepcao.html">Recepção</a><a href="admin.html">Admin</a><a href="corrida.html">Corrida</a><a href="index.html" id="logoutBtn">Sair</a></nav>
+</header>
+
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>Gerenciar usuários</h2>
+      <form id="formUsuario" autocomplete="off">
+        <div style="display:grid;gap:8px;margin-top:10px">
+          <input id="nome" placeholder="Nome" required>
+          <input id="email" type="email" placeholder="E-mail" required>
+          <input id="senha" type="password" placeholder="Senha" required>
+          <select id="role" required>
+            <option value="">Selecione função</option>
+            <option value="recepcao">Recepção</option>
+            <option value="corrida">Corrida</option>
+            <option value="admin">Admin</option>
+          </select>
+          <div style="display:flex;gap:8px"><button class="btn" id="btnSalvar" type="submit">Salvar</button><button type="button" id="btnCancelar" class="btn-small" style="display:none">Cancelar</button></div>
+        </div>
+        <div id="msgCadastro" style="margin-top:10px"></div>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Contas de acesso</h2>
+      <div id="listaUsuarios" style="margin-top:10px"><p class="empty">Carregando...</p></div>
+    </section>
+  </div>
+</main>
+
+<script type="module">
+/* ACCESS-BLOCK */
+const ALLOWED_ROLES = ["admin","master"];
+const infoUserEl = document.getElementById("infoUser");
+const logoutBtn = document.getElementById("logoutBtn");
+function getUser(){ try{return JSON.parse(localStorage.getItem("usuarioLogado"))}catch(e){return null} }
+function showAccessBlocked(message){
+  document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
+  if(logoutBtn) logoutBtn.disabled=true;
+  if(document.getElementById("accessBlockedCard")) return;
+  const card=document.createElement("div"); card.id="accessBlockedCard"; Object.assign(card.style,{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg, rgba(2,6,23,0.8), rgba(2,6,23,0.95))",zIndex:"9999"});
+  const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
+  const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
+  const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
+  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"}); btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
+  inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); card.appendChild(inner); document.body.appendChild(card);
+}
+(function checkAccess(){ const u = getUser(); if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return } if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return } infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : "(ADMIN)"}` })();
+if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
+
+/* firebase */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getDatabase, ref, push, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
+  authDomain: "eeba-9dfd0.firebaseapp.com",
+  databaseURL: "https://eeba-9dfd0-default-rtdb.firebaseio.com",
+  projectId: "eeba-9dfd0",
+  storageBucket: "eeba-9dfd0.firebasestorage.app",
+  messagingSenderId: "947616785928",
+  appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const usuariosRef = ref(db, "usuarios");
+
+const formUsuario = document.getElementById("formUsuario");
+const listaUsuarios = document.getElementById("listaUsuarios");
+const msgCadastro = document.getElementById("msgCadastro");
+const btnSalvar = document.getElementById("btnSalvar");
+const btnCancelar = document.getElementById("btnCancelar");
+let chaveEditando = null;
+
+function limparFormulario(){ formUsuario.reset(); chaveEditando=null; btnSalvar.textContent="Salvar"; btnCancelar.style.display="none"; msgCadastro.textContent=""; }
+formUsuario.addEventListener("submit", async e=>{
+  e.preventDefault(); msgCadastro.textContent="";
+  const nome = document.getElementById("nome").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value.trim();
+  const role = document.getElementById("role").value;
+  if(!nome||!email||!senha||!role){ msgCadastro.textContent="Preencha todos os campos."; msgCadastro.className="erro"; return; }
+  const usuario = { nome, email, senha, role };
+  try{
+    if(chaveEditando) { await set(ref(db,"usuarios/"+chaveEditando), usuario); msgCadastro.textContent="Usuário atualizado!"; }
+    else { await push(usuariosRef, usuario); msgCadastro.textContent="Usuário cadastrado!"; }
+    msgCadastro.className="ok"; limparFormulario();
+  }catch(err){ console.error(err); msgCadastro.textContent="Erro ao salvar."; msgCadastro.className="erro"; }
+});
+btnCancelar.addEventListener("click", limparFormulario);
+
+onValue(usuariosRef, snap=>{
+  listaUsuarios.innerHTML = "";
+  if(!snap.exists()){ listaUsuarios.innerHTML = "<p class='empty'>Nenhum usuário cadastrado.</p>"; return; }
+  snap.forEach(child=>{
+    const key = child.key; const u = child.val();
+    // proteger master
+    if(u.email === "dos.santos.raphael@escola.pr.gov.br") return;
+    const row = document.createElement("div"); row.className="user-row";
+    const name = document.createElement("div"); name.style.flex="1"; name.textContent = u.nome || "";
+    const mail = document.createElement("div"); mail.style.flex="1.2"; mail.textContent = u.email || "";
+    const roleDiv = document.createElement("div"); roleDiv.style.width="120px"; roleDiv.textContent = u.role || "";
+    const actions = document.createElement("div");
+    const btnEdit = document.createElement("button"); btnEdit.className="btn-small"; btnEdit.textContent="Editar"; btnEdit.onclick = ()=>{
+      document.getElementById("nome").value = u.nome||""; document.getElementById("email").value = u.email||""; document.getElementById("senha").value = u.senha||""; document.getElementById("role").value = u.role||"";
+      chaveEditando = key; btnSalvar.textContent = "Salvar alterações"; btnCancelar.style.display = "inline-block"; msgCadastro.textContent = `Editando ${u.nome}`;
+    };
+    const btnDel = document.createElement("button"); btnDel.className="btn-small"; btnDel.textContent="Excluir"; btnDel.onclick = async ()=>{
+      if(confirm(`Remover ${u.nome}?`)){ try{ await remove(ref(db,"usuarios/"+key)); if(chaveEditando===key) limparFormulario(); }catch(e){ alert("Erro ao excluir"); } }
+    };
+    actions.appendChild(btnEdit); actions.appendChild(btnDel);
+    row.appendChild(name); row.appendChild(mail); row.appendChild(roleDiv); row.appendChild(actions);
+    listaUsuarios.appendChild(row);
+  });
+});
+</script>
+</body>
+</html>

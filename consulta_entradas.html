@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <title>Consultar Entradas - Fórmula DS3</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <style>
+    :root{--text:#f9fafb;--muted:#9ca3af;--green:#16a34a;--red:#ef4444;--gray:#6b7280;}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text)}
+    header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.35)}
+    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+    main{max-width:1200px;margin:18px auto;padding:12px}
+    .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    input,select{padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,0.12);background:rgba(10,16,26,0.7);color:var(--text)}
+    table{width:100%;border-collapse:collapse;margin-top:10px;background:linear-gradient(180deg,#071122,#021026);border-radius:8px;overflow:hidden}
+    thead th{background:rgba(255,255,255,0.03);padding:12px 10px;text-align:left;position:sticky;top:0}
+    tbody td{padding:10px;border-bottom:1px dashed rgba(75,85,99,0.3)}
+    .empty{color:var(--muted);padding:12px 0}
+    .btn{padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+    .btn-presente{background:var(--green);color:#fff}
+    .btn-ausente{background:var(--red);color:#fff}
+    .btn-lem-sim{background:var(--green);color:#fff}
+    .btn-lem-nao{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .small-muted{font-size:12px;color:var(--muted)}
+    .filters-group{display:flex;gap:8px;align-items:center}
+  </style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px"><img src="logo-fds3.png" style="width:36px" alt="logo"></div><div><strong>Fórmula DS3</strong><br><span style="font-size:12px;color:var(--muted)" id="infoUser"></span></div></div>
+  <nav><a href="dashboard.html">Dashboard</a><a href="recepcao.html">Recepção</a><a href="consulta_entradas.html">Consultar</a><a href="admin.html">Admin</a><a href="corrida.html">Corrida</a><a href="index.html" id="logoutBtn">Sair</a></nav>
+</header>
+
+<main>
+  <h2>Consultar entradas</h2>
+
+  <div class="controls" style="margin-top:12px">
+    <input id="searchName" placeholder="Pesquisar por nome..." style="min-width:260px"/>
+    <input id="searchTurma" placeholder="Pesquisar por turma (ex: A)" style="width:120px"/>
+    <div class="filters-group">
+      <select id="filterTipo"><option value="">Filtrar por Tipo</option><option value="Visitante">Visitante</option><option value="Avaliador">Avaliador</option></select>
+      <select id="filterSerie"><option value="">Filtrar por Série</option><option value="9º Ano">9º Ano</option><option value="1º Ano">1º Ano</option><option value="2º Ano">2º Ano</option><option value="3º Ano">3º Ano</option></select>
+      <select id="filterPresenca"><option value="">Presença</option><option value="presente">Presente</option><option value="ausente">Ausente</option></select>
+      <select id="filterLembr"><option value="">Lembrancinha</option><option value="true">Entregue</option><option value="false">Não entregue</option></select>
+    </div>
+    <button id="btnClear" class="btn" style="background:transparent;border:1px solid rgba(148,163,184,0.08);color:var(--text)">Limpar</button>
+  </div>
+
+  <div style="margin-top:12px;overflow:auto">
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Nome</th><th>Série</th><th>Turma</th><th>Tipo</th><th>Categoria</th><th>Carro</th>
+          <th>Presença</th><th>Lembrancinha</th><th>Hora Saída</th><th>Tempo (hh:mm:ss)</th><th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div id="noResults" class="empty" style="display:none">Nenhuma entrada encontrada.</div>
+  </div>
+</main>
+
+<script type="module">
+/* ACCESS-BLOCK */
+const ALLOWED_ROLES = ["admin","master","recepcao","corrida"];
+const infoUserEl = document.getElementById("infoUser"), logoutBtn = document.getElementById("logoutBtn");
+function getUser(){ try{return JSON.parse(localStorage.getItem("usuarioLogado"))}catch(e){return null} }
+function showAccessBlocked(message){
+  document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
+  if(logoutBtn) logoutBtn.disabled=true;
+  if(document.getElementById("accessBlockedCard")) return;
+  const card=document.createElement("div"); card.id="accessBlockedCard"; Object.assign(card.style,{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg, rgba(2,6,23,0.8), rgba(2,6,23,0.95))",zIndex:"9999"});
+  const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
+  const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
+  const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
+  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"}); btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
+  inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); card.appendChild(inner); document.body.appendChild(card);
+}
+(function checkAccess(){ const u = getUser(); if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return } if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return } infoUserEl.textContent = `Logado como: ${u.email}` })();
+if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
+
+/* firebase */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
+  authDomain: "eeba-9dfd0.firebaseapp.com",
+  databaseURL: "https://eeba-9dfd0-default-rtdb.firebaseio.com",
+  projectId: "eeba-9dfd0",
+  storageBucket: "eeba-9dfd0.firebasestorage.app",
+  messagingSenderId: "947616785928",
+  appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const apostasRef = ref(db, "apostas");
+
+const tbody = document.getElementById("tbody"), noResults = document.getElementById("noResults");
+const searchName = document.getElementById("searchName"), searchTurma = document.getElementById("searchTurma");
+const filterTipo = document.getElementById("filterTipo"), filterSerie = document.getElementById("filterSerie");
+const filterPresenca = document.getElementById("filterPresenca"), filterLembr = document.getElementById("filterLembr");
+const btnClear = document.getElementById("btnClear");
+
+let allEntries = []; // array de { key, val }
+
+onValue(apostasRef, (snapshot)=>{
+  allEntries = [];
+  if(snapshot.exists()){
+    snapshot.forEach(child=>{
+      allEntries.push({ key: child.key, val: child.val() });
+    });
+  }
+  render();
+});
+
+function tempoFormatadoFromSegundos(sec){
+  sec = Math.max(0, Math.floor(sec||0));
+  const h = Math.floor(sec/3600); const m = Math.floor((sec%3600)/60); const s = sec%60;
+  const pad = n => String(n).padStart(2,'0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+}
+
+async function togglePresenca(key, entry){
+  // entry.val is the object
+  const current = entry.statusPresenca || "presente";
+  if(current === "presente"){
+    // marcar ausente: salvar saidaHora e tempo
+    const saida = new Date().toISOString();
+    let tempoSeg = 0;
+    try{
+      if(entry.dataHora){
+        const t0 = new Date(entry.dataHora).getTime();
+        const t1 = new Date(saida).getTime();
+        tempoSeg = Math.round((t1 - t0)/1000);
+        if(tempoSeg < 0) tempoSeg = 0;
+      }
+    }catch(e){ tempoSeg = 0; }
+    const updates = {
+      statusPresenca: "ausente",
+      saidaHora: saida,
+      tempoSegundos: tempoSeg,
+      tempoFormatado: tempoFormatadoFromSegundos(tempoSeg)
+    };
+    await update(ref(db, `apostas/${key}`), updates);
+  }else{
+    // marcar presente novamente: limpar saida e tempo, manter dataHora original
+    const updates = {
+      statusPresenca: "presente",
+      saidaHora: "",
+      tempoSegundos: 0,
+      tempoFormatado: ""
+    };
+    await update(ref(db, `apostas/${key}`), updates);
+  }
+}
+
+async function toggleLembrancinha(key, entry){
+  const atual = !!entry.lembrancinha;
+  const updates = { lembrancinha: !atual };
+  await update(ref(db, `apostas/${key}`), updates);
+}
+
+function render(){
+  const qName = (searchName.value || "").toLowerCase().trim();
+  const qTurma = (searchTurma.value || "").toLowerCase().trim();
+  const tipo = filterTipo.value;
+  const serie = filterSerie.value;
+  const pres = filterPresenca.value;
+  const lembr = filterLembr.value;
+
+  const filtered = allEntries.filter(item=>{
+    const e = item.val;
+    if(qName && !(e.nome||"").toLowerCase().includes(qName)) return false;
+    if(qTurma && !(e.turma||"").toLowerCase().includes(qTurma)) return false;
+    if(tipo && (e.tipo || "") !== tipo) return false;
+    if(serie && (e.serie || "") !== serie) return false;
+    if(pres && (e.statusPresenca || "") !== pres) return false;
+    if(lembr){
+      const boolVal = String(e.lembrancinha) === "true";
+      if(String(boolVal) !== lembr) return false;
+    }
+    return true;
+  }).sort((a,b)=> new Date(b.val.dataHora || 0) - new Date(a.val.dataHora || 0));
+
+  tbody.innerHTML = "";
+  if(filtered.length === 0){
+    noResults.style.display = "block";
+    return;
+  }
+  noResults.style.display = "none";
+
+  filtered.forEach(item=>{
+    const key = item.key;
+    const v = item.val;
+    const tr = document.createElement("tr");
+
+    const date = v.dataHora ? new Date(v.dataHora).toLocaleString() : "";
+    const saida = v.saidaHora ? new Date(v.saidaHora).toLocaleString() : "";
+    const tempo = v.tempoFormatado || "";
+
+    // Presença button (Opção B: verde = presente / vermelho = ausente)
+    let presBtn = document.createElement("button");
+    presBtn.className = 'btn';
+    if((v.statusPresenca || "presente") === "presente"){
+      presBtn.classList.add("btn-presente");
+      presBtn.textContent = "Presente";
+    }else{
+      presBtn.classList.add("btn-ausente");
+      presBtn.textContent = "Ausente";
+    }
+    presBtn.onclick = () => togglePresenca(key, v).catch(err=>console.error(err));
+
+    // Lembrancinha button (verde = entregou / cinza = não entregou)
+    let lemBtn = document.createElement("button");
+    lemBtn.className = 'btn';
+    if(!!v.lembrancinha){
+      lemBtn.classList.add("btn-lem-sim");
+      lemBtn.textContent = "Entregue";
+    }else{
+      lemBtn.classList.add("btn-lem-nao");
+      lemBtn.textContent = "Não entregue";
+    }
+    lemBtn.onclick = () => toggleLembrancinha(key, v).catch(err=>console.error(err));
+
+    tr.innerHTML = `
+      <td>${v.nome || ""}</td>
+      <td>${v.serie || ""}</td>
+      <td>${v.turma || ""}</td>
+      <td>${v.tipo || ""}</td>
+      <td>${v.categoria || ""}</td>
+      <td>${v.carro || ""}</td>
+      <td></td>
+      <td></td>
+      <td>${saida}</td>
+      <td>${tempo}</td>
+      <td>${date}</td>
+    `;
+
+    // replace empty cells for presence and lembr with our buttons
+    tr.children[6].innerHTML = "";
+    tr.children[6].appendChild(presBtn);
+
+    tr.children[7].innerHTML = "";
+    tr.children[7].appendChild(lemBtn);
+
+    tbody.appendChild(tr);
+  });
+}
+
+[searchName, searchTurma, filterTipo, filterSerie, filterPresenca, filterLembr].forEach(el=> el.addEventListener("input", render));
+btnClear.addEventListener("click", ()=>{ searchName.value=""; searchTurma.value=""; filterTipo.value=""; filterSerie.value=""; filterPresenca.value=""; filterLembr.value=""; render(); });
+
+</script>
+</body>
+</html>
