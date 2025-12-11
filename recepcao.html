@@ -5,41 +5,39 @@
     <title>Recepção - Cadastro & Palpite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root{
-            --bg:#020617;
-            --card:#020617;
-            --text:#f9fafb;
-            --muted:#9ca3af;
-            --accent:#ef4444;
-            --accent-soft:#f97316;
-            --green:#16a34a;
-            --red:#ef4444;
-            --gray:#6b7280;
-        }
+        :root{--bg:#020617;--card:#020617;--text:#f9fafb;--muted:#9ca3af;--accent:#ef4444;--accent-soft:#f97316}
         *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
-        body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);}
-        header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(148,163,184,0.35);background:rgba(2,6,23,0.95);backdrop-filter:blur(10px);}
-        .brand{display:flex;align-items:center;gap:12px;}
-        .logo-circle{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px}
-        .logo-circle img{width:36px;height:36px;object-fit:contain}
-        nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-        nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7);}
-        nav a:hover{background:rgba(37,99,235,0.12);}
-        .user-info{font-size:12px;color:var(--muted);margin-right:8px;}
-        main{max-width:980px;margin:18px auto;padding:0 12px;}
-        .card{background:radial-gradient(circle at top,#020617,#020617 40%,#030712);border-radius:12px;padding:18px;border:1px solid rgba(148,163,184,0.15);box-shadow:0 14px 28px rgba(0,0,0,0.6);}
-        h2{font-size:20px;margin-bottom:6px}
-        .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
-        @media(max-width:760px){.form-grid{grid-template-columns:1fr}}
-        .form-group{display:flex;flex-direction:column;gap:6px}
-        input,select{padding:10px;border-radius:10px;border:1px solid rgba(148,163,184,0.12);background:rgba(10,16,26,0.7);color:var(--text)}
-        .actions{display:flex;justify-content:flex-end;margin-top:16px}
-        .btn{padding:10px 18px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:white;cursor:pointer}
-        .note{font-size:13px;color:var(--muted);margin-top:6px}
-        .hidden{display:none!important}
-        /* small feedback messages */
+        body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);padding-top:64px;}
+        header{position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(148,163,184,0.35);background:rgba(2,6,23,0.95);z-index:50}
+        .brand{display:flex;align-items:center;gap:10px}
+        .logo-circle{width:48px;height:48px;border-radius:8px;background:#fff;padding:6px;display:flex;align-items:center;justify-content:center}
+        .logo-circle img{width:36px}
+        .menu-toggle{display:none;border:none;background:transparent;color:var(--text);font-size:20px;padding:8px;border-radius:8px}
+        nav{display:flex;align-items:center;gap:8px}
+        nav a{font-size:12px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+        .user-info{font-size:12px;color:var(--muted)}
+        main{max-width:900px;margin:16px auto;padding:12px}
+        .card{background:radial-gradient(circle at top,#020617,#020617 40%,#030712);border-radius:20px;padding:18px 16px 22px;border:1px solid rgba(148,163,184,0.45);box-shadow:0 20px 40px rgba(0,0,0,0.75)}
+        .tag{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+        h2{font-size:19px}
+        .description{font-size:12px;color:var(--muted);margin-top:4px}
+        .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px}
+        @media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+        .form-group{display:flex;flex-direction:column;gap:5px;font-size:13px}
+        label{color:var(--muted);font-weight:500}
+        input, select{padding:9px 11px;border-radius:12px;border:1px solid rgba(148,163,184,0.7);background:rgba(15,23,42,0.9);color:var(--text);font-size:13px;transition:border .15s, box-shadow .15s, background .15s;width:100%}
+        .actions{margin-top:16px;display:flex;justify-content:flex-end}
+        .btn{padding:9px 20px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:white;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;cursor:pointer}
+        #msgCadastro{margin-top:10px;font-size:12px}
         .ok{color:#4ade80}
         .erro{color:#fca5a5}
+
+        /* mobile nav */
+        @media(max-width:900px){
+            nav{position:fixed;top:64px;right:12px;background:linear-gradient(180deg, rgba(2,6,23,0.98), rgba(2,6,23,0.95));padding:12px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.6);display:none;flex-direction:column;gap:8px;z-index:60}
+            nav.open{display:flex}
+            .menu-toggle{display:inline-flex}
+        }
     </style>
 </head>
 <body>
@@ -48,32 +46,39 @@
         <div class="logo-circle"><img src="logo-fds3.png" alt="FDS3"></div>
         <div>
             <strong>Fórmula DS3</strong><br>
-            <span class="user-info" id="infoUser"></span>
+            <span>Recepção • Cadastro & palpite</span>
         </div>
     </div>
-    <nav>
-        <a href="dashboard.html">Dashboard</a>
-        <a href="recepcao.html">Recepção</a>
-        <a href="consulta_entradas.html">Consultar entradas</a>
-        <a href="admin.html">Admin</a>
-        <a href="corrida.html">Corrida</a>
-        <a href="index.html" id="logoutBtn">Sair</a>
-    </nav>
+
+    <div>
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
+        <nav id="mainNav">
+            <span class="user-info" id="infoUser"></span>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="consulta_entradas.html">Consultar entradas</a>
+            <a href="admin.html">Admin</a>
+            <a href="corrida.html">Corrida</a>
+            <a href="index.html" id="logoutBtn">Sair</a>
+        </nav>
+    </div>
 </header>
 
 <main>
     <section class="card">
-        <h2>Cadastro + escolha de palpite</h2>
-        <p class="note">A recepção registra quem está entrando e salva o palpite no carro escolhido.</p>
+        <div class="card-header">
+            <span class="tag">Entrada de participantes</span>
+            <h2>Cadastro + escolha de palpite</h2>
+            <p class="description">A recepção registra quem está entrando no evento e já define em qual carrinho a pessoa está dando o palpite.</p>
+        </div>
 
-        <form id="formCadastro" autocomplete="off">
+        <form id="formCadastro">
             <div class="form-grid">
                 <div class="form-group">
                     <label for="nome">Nome completo</label>
                     <input id="nome" type="text" placeholder="Ex: Raphael Santos" required>
                 </div>
 
-                <div class="form-group serie-group">
+                <div class="form-group">
                     <label for="serie">Série</label>
                     <select id="serie" required>
                         <option value="">Selecione...</option>
@@ -84,7 +89,7 @@
                     </select>
                 </div>
 
-                <div class="form-group turma-group">
+                <div class="form-group">
                     <label for="turma">Turma</label>
                     <select id="turma" required>
                         <option value="">Selecione...</option>
@@ -97,7 +102,7 @@
                     </select>
                 </div>
 
-                <div class="form-group categoria-group">
+                <div class="form-group">
                     <label for="categoria">Categoria</label>
                     <select id="categoria" required>
                         <option value="">Selecione...</option>
@@ -115,7 +120,6 @@
                         <option value="Visitante">Visitante</option>
                         <option value="Avaliador">Avaliador</option>
                     </select>
-                    <div class="note">Se for Avaliador (professor), Série/Turma/Categoria serão escondidos.</div>
                 </div>
 
                 <div class="form-group">
@@ -132,141 +136,142 @@
             <div class="actions">
                 <button class="btn" type="submit">Registrar entrada</button>
             </div>
-            <div id="msgCadastro" style="margin-top:10px;font-size:13px"></div>
+            <div id="msgCadastro"></div>
         </form>
     </section>
 </main>
 
 <script type="module">
-/* acesso */
-const ALLOWED_ROLES = ["recepcao","admin","master"];
-const infoUserEl = document.getElementById("infoUser");
-const logoutBtn = document.getElementById("logoutBtn");
-function getUser(){ try{ return JSON.parse(localStorage.getItem("usuarioLogado")); }catch(e){return null;} }
-function showAccessBlocked(message){
-    document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
-    if(logoutBtn) logoutBtn.disabled=true;
-    if(document.getElementById("accessBlockedCard")) return;
-    const card=document.createElement("div"); card.id="accessBlockedCard";
-    Object.assign(card.style,{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg, rgba(2,6,23,0.8), rgba(2,6,23,0.95))",zIndex:"9999"});
-    const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
-    const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
-    const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
-    const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"});
-    btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
-    const btnClose=document.createElement("button"); btnClose.textContent="Fechar aviso"; Object.assign(btnClose.style,{marginLeft:"10px",padding:"10px 14px",borderRadius:"999px",border:"1px solid rgba(148,163,184,0.25)",background:"transparent",color:"var(--text)",cursor:"pointer"});
-    btnClose.onclick = ()=> card.remove();
-    inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); inner.appendChild(btnClose); card.appendChild(inner); document.body.appendChild(card);
-}
+    // NAV hamburger
+    const menuToggle = document.getElementById('menuToggle');
+    const mainNav = document.getElementById('mainNav');
+    menuToggle.addEventListener('click', ()=> mainNav.classList.toggle('open'));
+    document.addEventListener('click', (e)=>{
+        if(window.innerWidth <= 900 && !e.target.closest('header')) mainNav.classList.remove('open');
+    });
 
-(function checkAccess(){
-    const u = getUser();
-    if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent = ""; return; }
-    if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return; }
-    infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : "(RECEPÇÃO)"}`;
-})();
-
-if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
-
-/* firebase */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
-  authDomain: "eeba-9dfd0.firebaseapp.com",
-  databaseURL: "https://eeba-9dfd0-default-rtdb.firebaseio.com",
-  projectId: "eeba-9dfd0",
-  storageBucket: "eeba-9dfd0.firebasestorage.app",
-  messagingSenderId: "947616785928",
-  appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
-};
-
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
-const apostasRef = ref(db, "apostas");
-
-const formCadastro = document.getElementById("formCadastro");
-const msgCadastro  = document.getElementById("msgCadastro");
-
-const tipoSelect = document.getElementById("tipo");
-const serieGroup = document.querySelector(".serie-group");
-const turmaGroup = document.querySelector(".turma-group");
-const categoriaGroup = document.querySelector(".categoria-group");
-
-function ajustarCamposPorTipo(tipo){
-    if(tipo === "Avaliador"){
-        serieGroup.classList.add("hidden");
-        turmaGroup.classList.add("hidden");
-        categoriaGroup.classList.add("hidden");
-        document.getElementById("serie").required = false;
-        document.getElementById("turma").required = false;
-        document.getElementById("categoria").required = false;
-        document.getElementById("serie").value = "";
-        document.getElementById("turma").value = "";
-        document.getElementById("categoria").value = "";
+    // Permite recepcao, admin, master (não redireciona automaticamente se bloqueado)
+    const userData = localStorage.getItem("usuarioLogado");
+    if(!userData){
+        alert("Faça login primeiro.");
+        window.location.href = "index.html";
     }else{
-        serieGroup.classList.remove("hidden");
-        turmaGroup.classList.remove("hidden");
-        categoriaGroup.classList.remove("hidden");
-        document.getElementById("serie").required = true;
-        document.getElementById("turma").required = true;
-        document.getElementById("categoria").required = true;
-    }
-}
-ajustarCamposPorTipo(tipoSelect.value);
-tipoSelect.addEventListener("change",(e)=> ajustarCamposPorTipo(e.target.value));
-
-formCadastro.addEventListener("submit", async (e)=>{
-    e.preventDefault();
-    msgCadastro.textContent = "";
-    msgCadastro.className = "";
-
-    const nome      = document.getElementById("nome").value.trim();
-    const serie     = document.getElementById("serie").value;
-    const turma     = document.getElementById("turma").value;
-    const categoria = document.getElementById("categoria").value;
-    const tipo      = document.getElementById("tipo").value;
-    const carro     = document.getElementById("carro").value;
-
-    if(!nome || !tipo || !carro){
-        msgCadastro.textContent = "Preencha nome, tipo e carrinho.";
-        msgCadastro.className = "erro";
-        return;
-    }
-    if(tipo !== "Avaliador" && (!serie || !turma || !categoria)){
-        msgCadastro.textContent = "Para Visitante, preencha série, turma e categoria.";
-        msgCadastro.className = "erro";
-        return;
+        const u = JSON.parse(userData);
+        if(u.role !== "recepcao" && u.role !== "admin" && u.role !== "master"){
+            // mostrar overlay e bloquear
+            document.body.insertAdjacentHTML('beforeend', `<div id="accessBlocked" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg, rgba(2,6,23,0.85), rgba(2,6,23,0.95));z-index:9999">
+                <div style="max-width:720px;width:90%;background:linear-gradient(135deg,#0b1220,#021024);padding:22px;border-radius:12px;text-align:center;color:var(--text)">
+                <h2 style="color:#fca5a5">Acesso bloqueado</h2><p style="color:var(--muted)">Solicite ao administrador alteração de perfil.</p>
+                <button style="padding:10px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff" onclick="location.href='mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20'+encodeURIComponent('${u?.email||''}')">Solicitar alteração</button>
+                </div></div>`);
+            document.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);
+            document.getElementById('logoutBtn').disabled = true;
+            document.getElementById("infoUser").textContent = `Logado como: ${u.email} (${u.role})`;
+        }else{
+            const info = u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : "(RECEPÇÃO)";
+            document.getElementById("infoUser").textContent = `Logado como: ${u.email} ${info}`;
+        }
     }
 
-    const novaAposta = {
-        nome,
-        serie: tipo === "Avaliador" ? "" : serie,
-        turma: tipo === "Avaliador" ? "" : turma,
-        categoria: tipo === "Avaliador" ? "" : categoria,
-        tipo,
-        carro,
-        dataHora: new Date().toISOString(),
-        statusPresenca: "presente",   // default presente
-        lembrancinha: false,          // default não recebeu lembrancinha
-        saidaHora: "",                // será preenchido quando marcar ausente
-        tempoSegundos: 0,
-        tempoFormatado: ""
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+        localStorage.removeItem("usuarioLogado");
+        setTimeout(()=> window.location.href = "index.html", 50);
+    });
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
+      authDomain: "eeba-9dfd0.firebaseapp.com",
+      databaseURL: "https://eeba-9dfd0-default-rtdb.firebaseio.com",
+      projectId: "eeba-9dfd0",
+      storageBucket: "eeba-9dfd0.firebasestorage.app",
+      messagingSenderId: "947616785928",
+      appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
     };
 
-    try{
-        await push(apostasRef, novaAposta);
-        msgCadastro.textContent = "Entrada registrada e palpite salvo!";
-        msgCadastro.className = "ok";
-        formCadastro.reset();
-        ajustarCamposPorTipo(document.getElementById("tipo").value);
-    }catch(err){
-        console.error(err);
-        msgCadastro.textContent = "Erro ao salvar no Firebase.";
-        msgCadastro.className = "erro";
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+    const apostasRef = ref(db, "apostas");
+
+    const formCadastro = document.getElementById("formCadastro");
+    const msgCadastro  = document.getElementById("msgCadastro");
+
+    function limparCamposAvaliador(){ // para quando for avaliador
+        document.getElementById("serie").value = "";
+        document.getElementById("turma").value = "";
+        document.getElementById("categoria").value = "OUTROS";
     }
-});
+
+    formCadastro.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        msgCadastro.textContent = "";
+        msgCadastro.className = "";
+
+        const nome      = document.getElementById("nome").value.trim();
+        const serie     = document.getElementById("serie").value;
+        const turma     = document.getElementById("turma").value;
+        const categoria = document.getElementById("categoria").value;
+        const tipo      = document.getElementById("tipo").value;
+        const carro     = document.getElementById("carro").value;
+
+        if(!nome || !tipo || !carro){
+            msgCadastro.textContent = "Preencha os campos obrigatórios.";
+            msgCadastro.className = "erro";
+            return;
+        }
+
+        // se for avaliador, turma/serie não são obrigatórios
+        if(tipo !== "Avaliador" && (!serie || !turma || !categoria)){
+            msgCadastro.textContent = "Preencha todos os campos (série, turma, categoria).";
+            msgCadastro.className = "erro";
+            return;
+        }
+
+        const novaAposta = {
+            nome,
+            serie: tipo === "Avaliador" ? "" : serie,
+            turma: tipo === "Avaliador" ? "" : turma,
+            categoria: tipo === "Avaliador" ? "OUTROS" : categoria,
+            tipo,
+            carro,
+            presente: true,
+            lembrancinha: false,
+            horaEntrada: new Date().toISOString(),
+            horaSaida: "",
+            tempoPermanenciaMin: null
+        };
+
+        try{
+            await push(apostasRef, novaAposta);
+            msgCadastro.textContent = "Entrada registrada e palpite salvo!";
+            msgCadastro.className = "ok";
+            formCadastro.reset();
+        }catch(err){
+            console.error(err);
+            msgCadastro.textContent = "Erro ao salvar no Firebase.";
+            msgCadastro.className = "erro";
+        }
+    });
+
+    // quando tipo muda, ocultar campos de turma/serie para Avaliador
+    const tipoSelect = document.getElementById("tipo");
+    tipoSelect.addEventListener("change", (e)=>{
+        if(e.target.value === "Avaliador"){
+            // tornar turma/serie não obrigatórios visualmente (mas backend já trata)
+            document.getElementById("serie").value = "";
+            document.getElementById("turma").value = "";
+            document.getElementById("serie").disabled = true;
+            document.getElementById("turma").disabled = true;
+            document.getElementById("categoria").value = "OUTROS";
+            document.getElementById("categoria").disabled = true;
+        }else{
+            document.getElementById("serie").disabled = false;
+            document.getElementById("turma").disabled = false;
+            document.getElementById("categoria").disabled = false;
+        }
+    });
 </script>
 </body>
 </html>
