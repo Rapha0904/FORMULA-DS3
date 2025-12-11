@@ -5,69 +5,169 @@
   <title>Dashboard - Fórmula DS3</title>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <style>
-    :root{--text:#f9fafb;--muted:#9ca3af}
+    :root{
+      --bg:#020617; --card:#071122;
+      --text:#f9fafb; --muted:#9ca3af;
+      --accent:#f97316;
+    }
     *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
-    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text)}
-    header{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.35)}
-    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
+    body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);padding-top:64px;}
+    header{
+      position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.12);z-index:80;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo-box{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center}
+    .logo-box img{width:36px;height:36px;object-fit:contain}
+    .brand-text strong{display:block;font-size:15px}
+    .brand-text span{font-size:12px;color:var(--muted)}
+    nav{display:flex;align-items:center;gap:8px}
+    nav a{font-size:13px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.12)}
+    .menu-toggle{display:none;border:none;background:transparent;color:var(--text);font-size:22px;padding:6px;border-radius:8px;cursor:pointer}
     main{max-width:1100px;margin:18px auto;padding:12px}
+    h2{font-size:20px;margin-bottom:8px}
     .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-    .card{background:radial-gradient(circle at top,#020617,#030712);padding:16px;border-radius:12px;border:1px solid rgba(148,163,184,0.08)}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{padding:10px;border-bottom:1px dashed rgba(75,85,99,0.6);text-align:left}
-    @media(max-width:900px){.cards{grid-template-columns:repeat(2,1fr)}}
+    .card{background:linear-gradient(180deg,#071122,#021026);padding:16px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+    .card small{color:var(--muted)}
+    .card .value{font-weight:700;font-size:20px;margin-top:8px}
+    table{width:100%;border-collapse:collapse;margin-top:12px;background:transparent}
+    thead th{background:rgba(255,255,255,0.02);padding:12px;text-align:left;font-size:13px;position:sticky;top:0}
+    tbody td{padding:10px;border-bottom:1px dashed rgba(75,85,99,0.12);font-size:14px}
+    @media (max-width:900px){
+      .cards{grid-template-columns:repeat(2,1fr)}
+      header{padding:10px}
+    }
+    @media (max-width:720px){
+      .cards{grid-template-columns:1fr}
+      nav{display:none;position:fixed;top:64px;right:12px;background:linear-gradient(180deg, rgba(2,6,23,0.98), rgba(2,6,23,0.95));padding:12px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.6);flex-direction:column;gap:8px;z-index:90;width:220px}
+      nav.open{display:flex}
+      .menu-toggle{display:inline-flex}
+    }
+
+    /* small overlay used when access blocked */
+    #accessOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:linear-gradient(90deg, rgba(2,6,23,0.85), rgba(2,6,23,0.95));z-index:9999}
+    #accessCard{max-width:720px;width:92%;border-radius:14px;padding:20px;background:linear-gradient(135deg,#0b1220,#021024);box-shadow:0 20px 40px rgba(0,0,0,0.7);color:var(--text);text-align:center}
+    button.primary{padding:10px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;cursor:pointer}
+    button.ghost{padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--muted);cursor:pointer}
   </style>
 </head>
 <body>
 <header>
-  <div style="display:flex;align-items:center;gap:12px"><div style="width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px"><img src="logo-fds3.png" style="width:36px" alt="logo"></div><div><strong>Fórmula DS3</strong><br><span style="font-size:12px;color:var(--muted)" id="infoUser"></span></div></div>
-  <nav><a href="dashboard.html">Dashboard</a><a href="recepcao.html">Recepção</a><a href="consulta_entradas.html">Consultar</a><a href="admin.html">Admin</a><a href="corrida.html">Corrida</a><a href="index.html" id="logoutBtn">Sair</a></nav>
+  <div class="brand">
+    <div class="logo-box"><img src="logo-fds3.png" alt="FDS3"></div>
+    <div class="brand-text"><strong>Fórmula DS3</strong><span id="infoUser"> </span></div>
+  </div>
+
+  <div>
+    <button id="menuToggle" class="menu-toggle" aria-label="Abrir menu">☰</button>
+    <nav id="mainNav">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="recepcao.html">Recepção</a>
+      <a href="consulta_entradas.html">Consultar</a>
+      <a href="admin.html">Admin</a>
+      <a href="corrida.html">Corrida</a>
+      <a href="index.html" id="logoutBtn">Sair</a>
+    </nav>
+  </div>
 </header>
 
 <main>
   <h2>Painel em tempo real</h2>
 
   <div class="cards" style="margin-top:12px">
-    <div class="card"><small style="color:var(--muted)">Total participantes</small><div id="totalParticipantes" style="font-size:22px;font-weight:700;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Palpites Carro 1</small><div id="palpites1" style="font-weight:700;font-size:20px;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Palpites Carro 2</small><div id="palpites2" style="font-weight:700;font-size:20px;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Palpites Carro 3</small><div id="palpites3" style="font-weight:700;font-size:20px;margin-top:8px">0</div></div>
+    <div class="card"><small>Total participantes</small><div id="totalParticipantes" class="value">0</div></div>
+    <div class="card"><small>Palpites Carro 1</small><div id="palpites1" class="value">0</div></div>
+    <div class="card"><small>Palpites Carro 2</small><div id="palpites2" class="value">0</div></div>
+    <div class="card"><small>Palpites Carro 3</small><div id="palpites3" class="value">0</div></div>
 
-    <div class="card"><small style="color:var(--muted)">Visitantes</small><div id="countVisitante" style="font-weight:700;font-size:18px;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Avaliadores</small><div id="countAvaliador" style="font-weight:700;font-size:18px;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Categoria ADS</small><div id="countADS" style="font-weight:700;font-size:18px;margin-top:8px">0</div></div>
-    <div class="card"><small style="color:var(--muted)">Outras categorias</small><div id="countOutras" style="font-weight:700;font-size:18px;margin-top:8px">0</div></div>
+    <div class="card"><small>Visitantes</small><div id="countVisitante" class="value">0</div></div>
+    <div class="card"><small>Avaliadores</small><div id="countAvaliador" class="value">0</div></div>
+    <div class="card"><small>Vitórias Carro 1</small><div id="vCarro1" class="value">0</div></div>
+    <div class="card"><small>Vitórias Carro 2</small><div id="vCarro2" class="value">0</div></div>
+  </div>
+
+  <div class="cards" style="margin-top:12px">
+    <div class="card"><small>Vitórias Carro 3</small><div id="vCarro3" class="value">0</div></div>
+    <div class="card"><small>Categoria ADS</small><div id="countADS" class="value">0</div></div>
+    <div class="card"><small>Outras categorias</small><div id="countOutras" class="value">0</div></div>
+    <div class="card"><small>Total corridas (stats)</small><div id="totalCorridas" class="value">0</div></div>
   </div>
 
   <div class="card" style="margin-top:16px">
     <h3>Últimas entradas</h3>
-    <table><thead><tr><th>Nome</th><th>Série</th><th>Turma</th><th>Tipo</th><th>Categoria</th><th>Carro</th><th>Data</th></tr></thead>
-    <tbody id="tbodyUltimas"></tbody></table>
+    <table role="table" aria-label="Últimas entradas">
+      <thead><tr><th>Nome</th><th>Série</th><th>Turma</th><th>Tipo</th><th>Categoria</th><th>Carro</th><th>Data</th></tr></thead>
+      <tbody id="tbodyUltimas"></tbody>
+    </table>
   </div>
 </main>
 
+<!-- Access overlay (shown when user not allowed) -->
+<div id="accessOverlay" aria-hidden="true">
+  <div id="accessCard">
+    <h2 style="color:#fca5a5">Acesso bloqueado</h2>
+    <p style="color:var(--muted)">Você não tem permissão para acessar esta área. Solicite ao administrador alteração de perfil.</p>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+      <button class="primary" id="requestAdminBtn">Solicitar alteração ao administrador</button>
+      <button class="ghost" id="closeAccessBtn">Fechar</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-/* ACCESS-BLOCK */
+/* NAV hamburger */
+const menuToggle = document.getElementById('menuToggle');
+const mainNav = document.getElementById('mainNav');
+menuToggle.addEventListener('click', ()=> mainNav.classList.toggle('open'));
+document.addEventListener('click', (e)=>{ if(window.innerWidth <= 720 && !e.target.closest('header')) mainNav.classList.remove('open'); });
+
+/* ACCESS BLOCK (no redirect; overlay shown) */
 const ALLOWED_ROLES = ["admin","master","recepcao","corrida"];
 const infoUserEl = document.getElementById("infoUser"), logoutBtn = document.getElementById("logoutBtn");
 function getUser(){ try{return JSON.parse(localStorage.getItem("usuarioLogado"))}catch(e){return null} }
-function showAccessBlocked(message){
-  document.querySelectorAll("button,input,select,textarea").forEach(el=>el.disabled=true);
-  if(logoutBtn) logoutBtn.disabled=true;
-  if(document.getElementById("accessBlockedCard")) return;
-  const card=document.createElement("div"); card.id="accessBlockedCard"; Object.assign(card.style,{position:"fixed",inset:0,display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(90deg, rgba(2,6,23,0.8), rgba(2,6,23,0.95))",zIndex:"9999"});
-  const inner=document.createElement("div"); Object.assign(inner.style,{maxWidth:"720px",width:"92%",borderRadius:"14px",padding:"22px",boxShadow:"0 20px 40px rgba(0,0,0,0.7)",background:"linear-gradient(135deg,#0b1220,#021024)",color:"var(--text)",textAlign:"center"});
-  const title=document.createElement("h2"); title.textContent="Acesso bloqueado"; title.style.color="#fca5a5";
-  const p=document.createElement("p"); p.textContent = message || "Solicite ao administrador alteração de perfil."; p.style.color="var(--muted)";
-  const btn=document.createElement("button"); btn.textContent="Solicitar alteração ao administrador"; Object.assign(btn.style,{padding:"10px 16px",borderRadius:"999px",border:"none",cursor:"pointer",background:"linear-gradient(135deg,#f97316,#ef4444)",color:"#fff",fontWeight:"700"}); btn.onclick = ()=> window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(getUser()?.email || "");
-  inner.appendChild(title); inner.appendChild(p); inner.appendChild(btn); card.appendChild(inner); document.body.appendChild(card);
+function showAccessOverlay(message){
+  const overlay = document.getElementById("accessOverlay");
+  overlay.style.display = "flex";
+  overlay.setAttribute("aria-hidden","false");
+  document.querySelectorAll("button,input,select,textarea,a").forEach(el=>{
+    if(!el.closest('#accessCard')) el.setAttribute('data-disabled-by-access','1');
+  });
 }
-(function checkAccess(){ const u = getUser(); if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return } if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return } infoUserEl.textContent = `Logado como: ${u.email}` })();
+function hideAccessOverlay(){
+  const overlay = document.getElementById("accessOverlay");
+  overlay.style.display = "none";
+  overlay.setAttribute("aria-hidden","true");
+  document.querySelectorAll("[data-disabled-by-access]").forEach(el=>el.removeAttribute('data-disabled-by-access'));
+}
+document.getElementById("requestAdminBtn").addEventListener("click", ()=>{
+  const u = getUser();
+  const mailto = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(u?.email || "");
+  window.location.href = mailto;
+});
+document.getElementById("closeAccessBtn").addEventListener("click", hideAccessOverlay);
+
+/* check auth / show info */
+(function checkAccess(){
+  const u = getUser();
+  if(!u){
+    // user not logged -> block
+    infoUserEl.textContent = "";
+    showAccessOverlay("Faça login para acessar esta página.");
+    return;
+  }
+  // show info at top
+  infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : u.role === "recepcao" ? "(RECEPÇÃO)" : u.role === "corrida" ? "(CORRIDA)" : ""}`;
+  if(!ALLOWED_ROLES.includes(u.role)){
+    showAccessOverlay();
+  }else{
+    hideAccessOverlay();
+  }
+})();
+
 if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
 
-/* firebase */
+/* FIREBASE - Realtime */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAmm8PRi_1OJoufaSBCooGb4cQ3HQZGT0o",
@@ -80,27 +180,38 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const apostasRef = ref(db, "apostas");
 
+/* refs */
+const apostasRef = ref(db, "apostas");
+const statsRef   = ref(db, "statsCorrida");
+
+/* ui refs */
 const totalParticipantesEl = document.getElementById("totalParticipantes");
 const p1 = document.getElementById("palpites1"), p2 = document.getElementById("palpites2"), p3 = document.getElementById("palpites3");
 const countVisitante = document.getElementById("countVisitante"), countAvaliador=document.getElementById("countAvaliador");
 const countADS=document.getElementById("countADS"), countOutras=document.getElementById("countOutras");
 const tbodyUltimas = document.getElementById("tbodyUltimas");
+const v1El = document.getElementById("vCarro1"), v2El = document.getElementById("vCarro2"), v3El = document.getElementById("vCarro3"), totalCorridasEl = document.getElementById("totalCorridas");
 
+/* listen apostas (palpites / participantes) */
 onValue(apostasRef, (snapshot)=>{
-  let total=0, c1=0,c2=0,c3=0, visit=0, aval=0, ads=0, outras=0;
+  let total=0, c1=0, c2=0, c3=0, visit=0, aval=0, ads=0, outras=0;
   const lista=[];
   if(snapshot.exists()){
     snapshot.forEach(ch=>{
-      const v = ch.val();
-      lista.push(v);
+      const v = ch.val() || {};
+      // normalize field names used across versions
+      // 'carro' expected values: 'carro1','carro2','carro3'
+      lista.push({ key: ch.key, val: v });
       total++;
-      if(v.carro === "carro1") c1++;
-      if(v.carro === "carro2") c2++;
-      if(v.carro === "carro3") c3++;
-      if(v.tipo === "Visitante") visit++; else if(v.tipo === "Avaliador") aval++;
-      if(v.categoria === "ADS") ads++; else if(v.categoria) outras++;
+      const carro = (v.carro||"").toString();
+      if(carro === "carro1") c1++;
+      if(carro === "carro2") c2++;
+      if(carro === "carro3") c3++;
+      if(v.tipo === "Visitante") visit++;
+      else if(v.tipo === "Avaliador") aval++;
+      if(String(v.categoria||"").toUpperCase() === "ADS") ads++;
+      else if(v.categoria) outras++;
     });
   }
   totalParticipantesEl.textContent = total;
@@ -108,16 +219,41 @@ onValue(apostasRef, (snapshot)=>{
   countVisitante.textContent = visit; countAvaliador.textContent = aval;
   countADS.textContent = ads; countOutras.textContent = outras;
 
-  // últimas 10
+  // últimas 10 entradas ordenadas por data (dataHora / horaEntrada)
   tbodyUltimas.innerHTML = "";
-  const ult = lista.slice(-10).reverse();
-  ult.forEach(v=>{
-    const tr = document.createElement("tr");
-    const s = v.dataHora ? new Date(v.dataHora).toLocaleString() : "";
-    tr.innerHTML = `<td>${v.nome||""}</td><td>${v.serie||""}</td><td>${v.turma||""}</td><td>${v.tipo||""}</td><td>${v.categoria||""}</td><td>${v.carro||""}</td><td>${s}</td>`;
+  const sorted = lista.sort((a,b)=>{
+    const A = new Date(a.val.dataHora || a.val.horaEntrada || 0).getTime();
+    const B = new Date(b.val.dataHora || b.val.horaEntrada || 0).getTime();
+    return B - A;
+  }).slice(0,10);
+  sorted.forEach(item=>{
+    const v = item.val || {};
+    const s = v.dataHora || v.horaEntrada || "";
+    const sFmt = s ? new Date(s).toLocaleString() : "";
+    const carroLabel = (v.carro === "carro1" ? "Carro 1" : v.carro === "carro2" ? "Carro 2" : v.carro === "carro3" ? "Carro 3" : v.carro || "");
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${v.nome||""}</td><td>${v.serie||""}</td><td>${v.turma||""}</td><td>${v.tipo||""}</td><td>${v.categoria||""}</td><td>${carroLabel}</td><td>${sFmt}</td>`;
     tbodyUltimas.appendChild(tr);
   });
 });
+
+/* listen statsCorrida for victories and totalCorridas */
+onValue(statsRef, (snapshot)=>{
+  if(snapshot.exists()){
+    const s = snapshot.val();
+    totalCorridasEl.textContent = s.totalCorridas ?? 0;
+    v1El.textContent = s.vitoriasCarro1 ?? 0;
+    v2El.textContent = s.vitoriasCarro2 ?? 0;
+    v3El.textContent = s.vitoriasCarro3 ?? 0;
+  }else{
+    totalCorridasEl.textContent = 0;
+    v1El.textContent = v2El.textContent = v3El.textContent = 0;
+  }
+});
+
+/* small helper: if you want to force-refresh UI on resize */
+window.addEventListener('resize', ()=>{ /* no-op for now, cards are responsive */ });
+
 </script>
 </body>
 </html>
