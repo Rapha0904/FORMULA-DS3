@@ -12,7 +12,7 @@
         .brand{display:flex;align-items:center;gap:10px}
         .logo-circle{width:48px;height:48px;border-radius:8px;background:#fff;padding:6px;display:flex;align-items:center;justify-content:center}
         .logo-circle img{width:36px}
-        .menu-toggle{display:none;border:none;background:transparent;color:var(--text);font-size:20px;padding:8px;border-radius:8px}
+        .menu-toggle{display:none;border:none;background:transparent;color:var(--text);font-size:20px;padding:8px;border-radius:8px;cursor:pointer}
         nav{display:flex;align-items:center;gap:8px}
         nav a{font-size:12px;color:#93c5fd;text-decoration:none;padding:6px 10px;border-radius:999px;border:1px solid rgba(147,197,253,0.7)}
         .user-info{font-size:12px;color:var(--muted)}
@@ -32,6 +32,9 @@
         .ok{color:#4ade80}
         .erro{color:#fca5a5}
 
+        /* hide helper class */
+        .hidden { display:none !important; }
+
         /* mobile nav */
         @media(max-width:900px){
             nav{position:fixed;top:64px;right:12px;background:linear-gradient(180deg, rgba(2,6,23,0.98), rgba(2,6,23,0.95));padding:12px;border-radius:10px;box-shadow:0 12px 30px rgba(0,0,0,0.6);display:none;flex-direction:column;gap:8px;z-index:60}
@@ -46,14 +49,14 @@
         <div class="logo-circle"><img src="logo-fds3.png" alt="FDS3"></div>
         <div>
             <strong>Fórmula DS3</strong><br>
-            <span>Recepção • Cadastro & palpite</span>
+            <span id="infoUser">Recepção • Cadastro & palpite</span>
         </div>
     </div>
 
     <div>
         <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu">☰</button>
         <nav id="mainNav">
-            <span class="user-info" id="infoUser"></span>
+            <span class="user-info" id="infoUserNav"></span>
             <a href="dashboard.html">Dashboard</a>
             <a href="consulta_entradas.html">Consultar entradas</a>
             <a href="admin.html">Admin</a>
@@ -71,16 +74,16 @@
             <p class="description">A recepção registra quem está entrando no evento e já define em qual carrinho a pessoa está dando o palpite.</p>
         </div>
 
-        <form id="formCadastro">
+        <form id="formCadastro" autocomplete="off">
             <div class="form-grid">
                 <div class="form-group">
                     <label for="nome">Nome completo</label>
                     <input id="nome" type="text" placeholder="Ex: Raphael Santos" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-serie">
                     <label for="serie">Série</label>
-                    <select id="serie" required>
+                    <select id="serie">
                         <option value="">Selecione...</option>
                         <option value="9º Ano">9º Ano</option>
                         <option value="1º Ano">1º Ano</option>
@@ -89,9 +92,9 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-turma">
                     <label for="turma">Turma</label>
-                    <select id="turma" required>
+                    <select id="turma">
                         <option value="">Selecione...</option>
                         <option value="A">A</option>
                         <option value="B">B</option>
@@ -102,9 +105,9 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="group-categoria">
                     <label for="categoria">Categoria</label>
-                    <select id="categoria" required>
+                    <select id="categoria">
                         <option value="">Selecione...</option>
                         <option value="REG">REG</option>
                         <option value="ADM">ADM</option>
@@ -150,26 +153,37 @@
         if(window.innerWidth <= 900 && !e.target.closest('header')) mainNav.classList.remove('open');
     });
 
-    // Permite recepcao, admin, master (não redireciona automaticamente se bloqueado)
+    // Permissões (não redireciona automaticamente — mostra overlay)
     const userData = localStorage.getItem("usuarioLogado");
     if(!userData){
         alert("Faça login primeiro.");
         window.location.href = "index.html";
     }else{
         const u = JSON.parse(userData);
+        // atualizar exibição do usuário no header/nav
+        document.getElementById("infoUser").textContent = `Logado como: ${u.email}`;
+        const infoNav = document.getElementById("infoUserNav");
+        if(infoNav) infoNav.textContent = `Logado como: ${u.email} (${u.role || ""})`;
+
         if(u.role !== "recepcao" && u.role !== "admin" && u.role !== "master"){
-            // mostrar overlay e bloquear
-            document.body.insertAdjacentHTML('beforeend', `<div id="accessBlocked" style="position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(90deg, rgba(2,6,23,0.85), rgba(2,6,23,0.95));z-index:9999">
-                <div style="max-width:720px;width:90%;background:linear-gradient(135deg,#0b1220,#021024);padding:22px;border-radius:12px;text-align:center;color:var(--text)">
-                <h2 style="color:#fca5a5">Acesso bloqueado</h2><p style="color:var(--muted)">Solicite ao administrador alteração de perfil.</p>
-                <button style="padding:10px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff" onclick="location.href='mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20'+encodeURIComponent('${u?.email||''}')">Solicitar alteração</button>
-                </div></div>`);
+            // overlay bloqueio sem redirecionamento
+            const overlay = document.createElement('div');
+            overlay.id = 'accessBlocked';
+            Object.assign(overlay.style, {position:'fixed',inset:0,display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(90deg, rgba(2,6,23,0.85), rgba(2,6,23,0.95))',zIndex:9999});
+            overlay.innerHTML = `<div style="max-width:720px;width:90%;background:linear-gradient(135deg,#0b1220,#021024);padding:22px;border-radius:12px;text-align:center;color:var(--text)">
+                <h2 style="color:#fca5a5">Acesso bloqueado</h2>
+                <p style="color:var(--muted)">Solicite ao administrador alteração de perfil.</p>
+                <button id="reqAdminBtn" style="padding:10px 14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff">Solicitar alteração</button>
+            </div>`;
+            document.body.appendChild(overlay);
+            // bloquear inputs/botoes
             document.querySelectorAll('button,input,select,textarea').forEach(el=>el.disabled=true);
+            // manter logout disabled também (conforme sua requisição anterior) — mas se quiser permitir logout, comente a linha abaixo
             document.getElementById('logoutBtn').disabled = true;
-            document.getElementById("infoUser").textContent = `Logado como: ${u.email} (${u.role})`;
-        }else{
-            const info = u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : "(RECEPÇÃO)";
-            document.getElementById("infoUser").textContent = `Logado como: ${u.email} ${info}`;
+
+            document.getElementById('reqAdminBtn').addEventListener('click', ()=> {
+                window.location.href = "mailto:rh@empresa.com.br?subject=Solicitação%20de%20alteração%20de%20perfil&body=Por%20favor%20alterar%20meu%20perfil.%20Email:%20" + encodeURIComponent(u.email || '');
+            });
         }
     }
 
@@ -178,6 +192,7 @@
         setTimeout(()=> window.location.href = "index.html", 50);
     });
 
+    // Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
@@ -198,11 +213,41 @@
     const formCadastro = document.getElementById("formCadastro");
     const msgCadastro  = document.getElementById("msgCadastro");
 
-    function limparCamposAvaliador(){ // para quando for avaliador
-        document.getElementById("serie").value = "";
-        document.getElementById("turma").value = "";
-        document.getElementById("categoria").value = "OUTROS";
+    // helpers para exibir/ocultar campos conforme tipo
+    const tipoSelect = document.getElementById("tipo");
+    const groupSerie = document.getElementById("group-serie");
+    const groupTurma = document.getElementById("group-turma");
+    const groupCategoria = document.getElementById("group-categoria");
+    const serieInput = document.getElementById("serie");
+    const turmaInput = document.getElementById("turma");
+    const categoriaSelect = document.getElementById("categoria");
+
+    function setFieldsForAvaliador(on){
+        if(on){
+            // ocultar e desabilitar série/turma; categoria -> OUTROS
+            groupSerie.classList.add('hidden');
+            groupTurma.classList.add('hidden');
+            serieInput.value = "";
+            turmaInput.value = "";
+            serieInput.disabled = true;
+            turmaInput.disabled = true;
+            categoriaSelect.value = "OUTROS";
+            categoriaSelect.disabled = true;
+        }else{
+            groupSerie.classList.remove('hidden');
+            groupTurma.classList.remove('hidden');
+            serieInput.disabled = false;
+            turmaInput.disabled = false;
+            categoriaSelect.disabled = false;
+        }
     }
+
+    // inicializa de acordo com o valor atual (caso reabra)
+    setFieldsForAvaliador(tipoSelect.value === "Avaliador");
+
+    tipoSelect.addEventListener("change", (e)=>{
+        setFieldsForAvaliador(e.target.value === "Avaliador");
+    });
 
     formCadastro.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -216,31 +261,37 @@
         const tipo      = document.getElementById("tipo").value;
         const carro     = document.getElementById("carro").value;
 
+        // validações: nome, tipo e carro sempre obrigatórios
         if(!nome || !tipo || !carro){
-            msgCadastro.textContent = "Preencha os campos obrigatórios.";
+            msgCadastro.textContent = "Preencha os campos obrigatórios (Nome, Tipo e Carrinho).";
             msgCadastro.className = "erro";
             return;
         }
 
-        // se for avaliador, turma/serie não são obrigatórios
+        // se não for avaliador, série/turma/categoria devem ser preenchidos
         if(tipo !== "Avaliador" && (!serie || !turma || !categoria)){
             msgCadastro.textContent = "Preencha todos os campos (série, turma, categoria).";
             msgCadastro.className = "erro";
             return;
         }
 
+        // montar objeto com campos compatíveis com consulta_entradas.html
+        const nowIso = new Date().toISOString();
         const novaAposta = {
             nome,
-            serie: tipo === "Avaliador" ? "" : serie,
-            turma: tipo === "Avaliador" ? "" : turma,
-            categoria: tipo === "Avaliador" ? "OUTROS" : categoria,
+            serie: (tipo === "Avaliador") ? "" : serie,
+            turma: (tipo === "Avaliador") ? "" : turma,
+            categoria: (tipo === "Avaliador") ? "OUTROS" : categoria,
             tipo,
             carro,
-            presente: true,
-            lembrancinha: false,
-            horaEntrada: new Date().toISOString(),
-            horaSaida: "",
-            tempoPermanenciaMin: null
+            // campos para consulta e controles
+            dataHora: nowIso,            // usado em consulta (dataHora)
+            horaEntrada: nowIso,        // compatibilidade com versão anterior
+            statusPresenca: "presente",
+            saidaHora: "",
+            tempoSegundos: 0,
+            tempoFormatado: "",
+            lembrancinha: false
         };
 
         try{
@@ -248,28 +299,12 @@
             msgCadastro.textContent = "Entrada registrada e palpite salvo!";
             msgCadastro.className = "ok";
             formCadastro.reset();
+            // restaurar campos habilitados (se o usuário voltou a escolher Visitante)
+            setFieldsForAvaliador(false);
         }catch(err){
             console.error(err);
             msgCadastro.textContent = "Erro ao salvar no Firebase.";
             msgCadastro.className = "erro";
-        }
-    });
-
-    // quando tipo muda, ocultar campos de turma/serie para Avaliador
-    const tipoSelect = document.getElementById("tipo");
-    tipoSelect.addEventListener("change", (e)=>{
-        if(e.target.value === "Avaliador"){
-            // tornar turma/serie não obrigatórios visualmente (mas backend já trata)
-            document.getElementById("serie").value = "";
-            document.getElementById("turma").value = "";
-            document.getElementById("serie").disabled = true;
-            document.getElementById("turma").disabled = true;
-            document.getElementById("categoria").value = "OUTROS";
-            document.getElementById("categoria").disabled = true;
-        }else{
-            document.getElementById("serie").disabled = false;
-            document.getElementById("turma").disabled = false;
-            document.getElementById("categoria").disabled = false;
         }
     });
 </script>
