@@ -12,9 +12,7 @@
     }
     *{margin:0;padding:0;box-sizing:border-box;font-family:"Segoe UI",system-ui;}
     body{min-height:100vh;background:radial-gradient(circle at top,#1f2937,#020617);color:var(--text);padding-top:64px;}
-    header{
-      position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.12);z-index:60;
-    }
+    header{position:fixed;top:0;left:0;right:0;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:rgba(2,6,23,0.95);border-bottom:1px solid rgba(148,163,184,0.12);z-index:60;}
     .brand{display:flex;align-items:center;gap:12px}
     .logo-box{width:44px;height:44px;border-radius:8px;overflow:hidden;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center}
     .logo-box img{width:36px;height:36px;object-fit:contain}
@@ -47,7 +45,6 @@
     .entry-meta{display:flex;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:13px}
     /* responsive */
     @media (max-width:1000px){
-      .brand-text strong{font-size:14px}
       table{min-width:820px}
     }
     @media (max-width:820px){
@@ -65,8 +62,6 @@
       thead th, tbody td{font-size:14px}
       h2{font-size:18px}
     }
-
-    /* Accessibility small tweaks */
     button:focus, a:focus, input:focus, select:focus{outline:2px solid rgba(249,115,22,0.18);outline-offset:2px}
   </style>
 </head>
@@ -105,7 +100,6 @@
     </div>
   </div>
 
-  <!-- Table for desktop / tablet -->
   <div class="table-wrap" id="tableWrap">
     <table id="resultsTable" role="table" aria-label="Resultados">
       <thead>
@@ -119,7 +113,6 @@
     <div id="noResults" class="empty" style="display:none">Nenhuma entrada encontrada.</div>
   </div>
 
-  <!-- Card list for mobile -->
   <div class="card-list" id="cardList" aria-live="polite"></div>
 </main>
 
@@ -150,7 +143,7 @@ function showAccessBlocked(message){
   const u = getUser();
   if(!u){ showAccessBlocked("Faça login para acessar esta página."); infoUserEl.textContent=""; return }
   if(!ALLOWED_ROLES.includes(u.role)){ showAccessBlocked("Acesso bloqueado — solicite ao administrador alteração de perfil."); infoUserEl.textContent = `Logado como: ${u.email} (${u.role})`; return }
-  infoUserEl.textContent = `Logado como: ${u.email} ${u.role === "master" ? "(MASTER)" : u.role === "admin" ? "(ADMIN)" : ""}`;
+  infoUserEl.textContent = `Logado como: ${u.email}`;
 })();
 if(logoutBtn) logoutBtn.addEventListener("click", ()=>{ localStorage.removeItem("usuarioLogado"); setTimeout(()=>window.location.href="index.html",50); });
 
@@ -167,6 +160,7 @@ const firebaseConfig = {
   messagingSenderId: "947616785928",
   appId: "1:947616785928:web:37b39b183bbd1acc9813bd"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const apostasRef = ref(db, "apostas");
@@ -179,17 +173,17 @@ const filterPresenca = document.getElementById("filterPresenca"), filterLembr = 
 const btnClear = document.getElementById("btnClear");
 const tableWrap = document.getElementById("tableWrap"), cardList = document.getElementById("cardList");
 
-let allEntries = []; // { key, val }
+let allEntries = []; // array de { key, val }
 
-/* listen realtime */
+/* realtime listener */
 onValue(apostasRef, (snapshot)=>{
   allEntries = [];
   if(snapshot.exists()){
     snapshot.forEach(child=>{
-      const v = child.val() || {};
-      // normalize fields for backward compatibility
-      if(!v.statusPresenca) v.statusPresenca = v.presente ? "presente" : (v.statusPresenca || "presente");
-      allEntries.push({ key: child.key, val: v });
+      const val = child.val() || {};
+      // normalize old fields
+      if(val.presente !== undefined && !val.statusPresenca) val.statusPresenca = val.presente ? "presente" : "presente";
+      allEntries.push({ key: child.key, val });
     });
   }
   render();
@@ -203,55 +197,69 @@ function tempoFormatadoFromSegundos(sec){
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+function mapCarText(code){
+  if(!code) return "";
+  if(code === "carro1") return "Carro 1";
+  if(code === "carro2") return "Carro 2";
+  if(code === "carro3") return "Carro 3";
+  return code;
+}
 function formatIsoToPtBR(iso){
   if(!iso) return "";
   try{
-    // display in pt-BR timezone São Paulo
     return new Date(iso).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', hour12: false });
   }catch(e){
     return new Date(iso).toLocaleString();
   }
 }
 
+/* toggle presença - usa horaEntrada (fallback dataHora) */
 async function togglePresenca(key, entry){
   const current = entry.statusPresenca || "presente";
+
   if(current === "presente"){
-    const saida = new Date().toISOString();
+    // marcar ausente: salvar saidaHora e tempo
+    const saidaIso = new Date().toISOString();
     let tempoSeg = 0;
     try{
-      if(entry.dataHora){
-        const t0 = Date.parse(entry.dataHora);
-        const t1 = Date.parse(saida);
-        if(!isNaN(t0) && !isNaN(t1)){
-          tempoSeg = Math.round((t1 - t0)/1000);
-          if(tempoSeg < 0) tempoSeg = 0;
-        }else{
-          tempoSeg = 0;
-        }
+      const entradaIso = entry.horaEntrada || entry.dataHora || entry.horaEntradaISO || "";
+      if(entradaIso){
+        const t0 = new Date(entradaIso).getTime();
+        const t1 = new Date(saidaIso).getTime();
+        tempoSeg = Math.round((t1 - t0)/1000);
+        if(tempoSeg < 0) tempoSeg = 0;
       }
-    }catch(e){ tempoSeg = 0; }
+    }catch(e){
+      tempoSeg = 0;
+    }
+
     const updates = {
       statusPresenca: "ausente",
-      saidaHora: saida,
+      saidaHora: saidaIso,
       tempoSegundos: tempoSeg,
       tempoFormatado: tempoFormatadoFromSegundos(tempoSeg)
     };
-    await update(ref(db, `apostas/${key}`), updates);
+    try{ await update(ref(db, `apostas/${key}`), updates); }
+    catch(err){ console.error("Erro ao atualizar presença:", err); }
   }else{
+    // marcar presente novamente: limpar saida e tempo
     const updates = {
       statusPresenca: "presente",
       saidaHora: "",
       tempoSegundos: 0,
       tempoFormatado: ""
     };
-    await update(ref(db, `apostas/${key}`), updates);
+    try{ await update(ref(db, `apostas/${key}`), updates); }
+    catch(err){ console.error("Erro ao atualizar presença:", err); }
   }
 }
 
+/* toggle lembrancinha */
 async function toggleLembrancinha(key, entry){
   const atual = !!entry.lembrancinha;
   const updates = { lembrancinha: !atual };
-  await update(ref(db, `apostas/${key}`), updates);
+  try{ await update(ref(db, `apostas/${key}`), updates); }
+  catch(err){ console.error("Erro ao atualizar lembrancinha:", err); }
 }
 
 /* render results (table + cards) */
@@ -275,14 +283,8 @@ function render(){
       if(String(boolVal) !== lembr) return false;
     }
     return true;
-  }).sort((a,b)=>{
-    // sort by dataHora ISO robustly (newest first)
-    const ta = Date.parse(a.val.dataHora || a.val.horaEntrada || 0) || 0;
-    const tb = Date.parse(b.val.dataHora || b.val.horaEntrada || 0) || 0;
-    return tb - ta;
-  });
+  }).sort((a,b)=> new Date(b.val.dataHora || b.val.horaEntrada || 0) - new Date(a.val.dataHora || a.val.horaEntrada || 0));
 
-  // table render
   tbody.innerHTML = "";
   cardList.innerHTML = "";
 
@@ -296,10 +298,9 @@ function render(){
   filtered.forEach(item=>{
     const key = item.key;
     const v = item.val;
-
-    // format dates using pt-BR / São Paulo timezone
-    const date = v.dataHora ? formatIsoToPtBR(v.dataHora) : (v.horaEntrada ? formatIsoToPtBR(v.horaEntrada) : "");
-    const saida = v.saidaHora ? formatIsoToPtBR(v.saidaHora) : "";
+    const dateIso = v.dataHora || v.horaEntrada || v.horaEntradaISO || "";
+    const dateStr = dateIso ? formatIsoToPtBR(dateIso) : "";
+    const saidaStr = v.saidaHora ? formatIsoToPtBR(v.saidaHora) : "";
     const tempo = v.tempoFormatado || (v.tempoSegundos ? tempoFormatadoFromSegundos(v.tempoSegundos) : "");
 
     // create table row
@@ -310,13 +311,14 @@ function render(){
       <td>${v.turma || ""}</td>
       <td>${v.tipo || ""}</td>
       <td>${v.categoria || ""}</td>
-      <td>${v.carro ? (v.carro.replace('carro1','Carro 1').replace('carro2','Carro 2').replace('carro3','Carro 3')) : ''}</td>
+      <td>${mapCarText(v.carro)}</td>
       <td></td>
       <td></td>
-      <td>${saida}</td>
+      <td>${saidaStr}</td>
       <td>${tempo}</td>
-      <td>${date}</td>
+      <td>${dateStr}</td>
     `;
+
     // presence button
     const presBtn = document.createElement("button");
     presBtn.className = 'btn';
@@ -343,28 +345,25 @@ function render(){
       <div class="entry-row">
         <div class="entry-top">
           <div><strong style="font-size:15px">${v.nome || ""}</strong><div class="small-muted">${v.tipo || ""} • ${v.categoria || ""}</div></div>
-          <div style="text-align:right"><div class="small-muted">${date}</div><div style="margin-top:6px">${v.carro ? (v.carro.replace('carro1','Carro 1').replace('carro2','Carro 2').replace('carro3','Carro 3')) : ''}</div></div>
+          <div style="text-align:right"><div class="small-muted">${dateStr}</div><div style="margin-top:6px">${mapCarText(v.carro)}</div></div>
         </div>
         <div class="entry-meta">
           <div>Série: ${v.serie || "-"}</div>
           <div>Turma: ${v.turma || "-"}</div>
-          <div>Saída: ${saida || "-"}</div>
+          <div>Saída: ${saidaStr || "-"}</div>
           <div>Tempo: ${tempo || "-"}</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
-          <!-- buttons -->
-        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"></div>
       </div>
     `;
     // attach buttons to card
-    const cardButtonsDiv = card.querySelector('div > div:nth-child(3)');
+    const btnsDiv = card.querySelector('div > div:nth-child(3)');
     const cardPres = presBtn.cloneNode(true);
     const cardLem = lemBtn.cloneNode(true);
-    // rebind handlers for clones
     cardPres.onclick = ()=> togglePresenca(key, v).catch(err=>console.error(err));
     cardLem.onclick = ()=> toggleLembrancinha(key, v).catch(err=>console.error(err));
-    cardButtonsDiv.appendChild(cardPres);
-    cardButtonsDiv.appendChild(cardLem);
+    btnsDiv.appendChild(cardPres);
+    btnsDiv.appendChild(cardLem);
 
     cardList.appendChild(card);
   });
